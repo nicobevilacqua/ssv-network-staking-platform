@@ -8,7 +8,6 @@ import {ISSVNetwork} from "ssv-network/ISSVNetwork.sol";
 import {ISSVRegistry} from "ssv-network/ISSVRegistry.sol";
 
 import {IDepositContract} from "src/interfaces/IDepositContract.sol";
-// import {StakingShareToken} from "src/StakingShareToken.sol";
 
 import {StakingPool} from "src/StakingPool.sol";
 
@@ -31,6 +30,7 @@ contract StakingPoolTest is Test, StakingDataMock {
         address SSVTokenAddress = vm.envAddress("SSV_TOKEN_ADDRESS");
         address SSVNetworkAddress = vm.envAddress("SSV_NETWORK_ADDRESS");
         address SSVRegistryAddress = vm.envAddress("SSV_REGISTRY_ADDRESS");
+        address PriceFeedAddress = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
 
         depositContract = IDepositContract(depositContractAddress);
         ssvToken = ERC20(SSVTokenAddress);
@@ -41,7 +41,8 @@ contract StakingPoolTest is Test, StakingDataMock {
             depositContractAddress,
             SSVTokenAddress,
             SSVNetworkAddress,
-            SSVRegistryAddress
+            SSVRegistryAddress,
+            PriceFeedAddress
         );
 
         vm.label(depositContractAddress, "DepositContract");
@@ -54,6 +55,8 @@ contract StakingPoolTest is Test, StakingDataMock {
     }
 
     function testStakingPool() external {
+        assertEq(10, stakingPool.getLatestPrice());
+
         address bob = makeAddr("bob");
         deal(bob, 100 ether);
 

@@ -11,9 +11,15 @@ import {ISSVRegistry} from "ssv-network/ISSVRegistry.sol";
 
 import {IDepositContract} from "./interfaces/IDepositContract.sol";
 
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
 // import {StakingShareToken} from "./StakingShareToken.sol";
 
+//
+
 contract StakingPool is Owned, ERC20 {
+    AggregatorV3Interface internal immutable priceFeed;
+
     uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 * 1e18;
 
     mapping(bytes32 => Validator) public validator;
@@ -59,13 +65,16 @@ contract StakingPool is Owned, ERC20 {
         // address _token,
         address _SSVToken,
         address _SSVNetwork,
-        address _SSVRegistry
+        address _SSVRegistry,
+        address _priceFeedAddress
     ) Owned(msg.sender) ERC20("Shared Token", "STKN", 18) {
         depositContract = IDepositContract(_depositContract);
         // token = StakingShareToken(_token);
         SSVToken = ERC20(_SSVToken);
         SSVRegistry = ISSVRegistry(_SSVRegistry);
         SSVNetwork = ISSVNetwork(_SSVNetwork);
+
+        priceFeed = AggregatorV3Interface(_priceFeedAddress);
     }
 
     receive() external payable {}
@@ -163,5 +172,10 @@ contract StakingPool is Owned, ERC20 {
 
         // Emit an event to log the deposit of the public key
         emit ValidatorStakeDeposited(pubKeyHash, block.timestamp);
+    }
+
+    function getLatestPrice() public view returns (int256) {
+        (, int256 price, , , ) = priceFeed.latestRoundData();
+        return price;
     }
 }

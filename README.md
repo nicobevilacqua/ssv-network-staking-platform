@@ -14,10 +14,10 @@ get operators
 
 
 # run the node
-source .env.local && anvil --fork-url $INFURA_RPC_URL
+source .env && anvil --fork-url $INFURA_RPC_URL
 
 # run the test locally
-source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
+source .env && forge test --fork-url $INFURA_RPC_URL -vvv
 
 # run tests on local node
 
@@ -35,4 +35,41 @@ source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
 
 ```sh
 source .env.local && forge test --fork-url $INFURA_RPC_URL
+```
+
+## Deploy on local node
+
+### First terminal
+```sh
+source .env && anvil --fork-url $INFURA_RPC_URL
+```
+
+### Second Terminal
+```sh
+source .env && forge script ./script/Deploy.s.sol --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
+```
+
+
+### Deploy with tenderly gateway
+```sh
+source .env && forge script ./script/Deploy.s.sol --rpc-url https://goerli.gateway.tenderly.co/4qcCAJIkvm7jWdk51yzcu9 --broadcast --private-key $PRIVATE_KEY --legacy
+```
+
+### USE fRPC
+
+1 - Clone https://github.com/fluencelabs/fRPC-Substrate
+2 - Follow the guide
+
+```sh
+npm run run configs/quickstart_config.json
+```
+
+
+
+### Use ganache for local testing
+
+1 - 
+
+```sh
+source .env && forge script ./script/Deploy.s.sol --rpc-url http://127.0.01:8545 --broadcast --private-key 0xa545b25e3591733f315337baaf4d972104470122f39a441295d8378c6ee05edb
 ```

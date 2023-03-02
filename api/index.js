@@ -1,6 +1,6 @@
 const { SSVKeys } = require("ssv-keys");
 
-const keystore = require("./config/validator_keys/keystore-m_12381_3600_0_0_0-1677727151.json");
+const keystore = require("../config/keystores/keystore1.json");
 
 const axios = require("axios");
 
