@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
@@ -9,9 +9,7 @@ import {ISSVRegistry} from "ssv-network/ISSVRegistry.sol";
 
 import {IDepositContract} from "src/interfaces/IDepositContract.sol";
 
-import {StakingPool} from "src/StakingPool.sol";
-
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import "src/StakingPool.sol";
 
 import {StakingDataMock} from "./mocks/StakingDataMock.sol";
 
@@ -20,29 +18,32 @@ contract StakingPoolTest is Test, StakingDataMock {
     ISSVNetwork private ssvNetwork;
     ISSVRegistry private ssvRegistry;
     ERC20 private ssvToken;
+    WETH private weth;
 
     StakingPool private stakingPool;
 
     function setUp() external {
-        address depositContractAddress = vm.envAddress(
-            "DEPOSIT_CONTRACT_ADDRESS"
-        );
+        address depositContractAddress = vm.envAddress("DEPOSIT_CONTRACT_ADDRESS");
         address SSVTokenAddress = vm.envAddress("SSV_TOKEN_ADDRESS");
         address SSVNetworkAddress = vm.envAddress("SSV_NETWORK_ADDRESS");
         address SSVRegistryAddress = vm.envAddress("SSV_REGISTRY_ADDRESS");
-        address PriceFeedAddress = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
+        address wethAddress = vm.envAddress("WETH_ADDRESS");
+        address priceFeedAddress = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
 
         depositContract = IDepositContract(depositContractAddress);
         ssvToken = ERC20(SSVTokenAddress);
         ssvNetwork = ISSVNetwork(SSVNetworkAddress);
         ssvRegistry = ISSVRegistry(SSVRegistryAddress);
+        weth = WETH(payable(wethAddress));
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeedAddress);
 
         stakingPool = new StakingPool(
-            depositContractAddress,
-            SSVTokenAddress,
-            SSVNetworkAddress,
-            SSVRegistryAddress,
-            PriceFeedAddress
+            depositContract,
+            ssvToken,
+            ssvNetwork,
+            ssvRegistry,
+            weth,
+            priceFeed
         );
 
         vm.label(depositContractAddress, "DepositContract");
@@ -60,7 +61,7 @@ contract StakingPoolTest is Test, StakingDataMock {
         address bob = makeAddr("bob");
         deal(bob, 100 ether);
 
-        stakingPool.stake{value: 32 ether}();
+        stakingPool.stake{value: 32 ether}(32 ether);
 
         stakingPool.depositValidatorStaking(
             pubKey,

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity 0.8.17;
 
 import {ERC4626} from "solmate/mixins/ERC4626.sol";
 import {Owned} from "solmate/auth/Owned.sol";
 import {ERC20} from "solmate/tokens/ERC20.sol";
 import {SafeTransferLib} from "solmate/utils/SafeTransferLib.sol";
+import {WETH} from "solmate/tokens/WETH.sol";
 
 import {ISSVNetwork} from "ssv-network/ISSVNetwork.sol";
 import {ISSVRegistry} from "ssv-network/ISSVRegistry.sol";
@@ -13,24 +14,20 @@ import {IDepositContract} from "./interfaces/IDepositContract.sol";
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-// import {StakingShareToken} from "./StakingShareToken.sol";
+contract StakingPool is Owned, ERC4626 {
+    enum IsActive{ NONE, FALSE, TRUE }
 
-//
+    uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 ether;
 
-contract StakingPool is Owned, ERC20 {
-    AggregatorV3Interface internal immutable priceFeed;
-
-    uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 * 1e18;
-
-    mapping(bytes32 => Validator) public validator;
+    mapping(bytes32 => Validator) public validators;
     uint256 public totalValidators;
-
-    // StakingShareToken public token;
+    uint256 public totalValidatorStakes;
 
     IDepositContract public immutable depositContract;
     ISSVNetwork public immutable SSVNetwork;
     ISSVRegistry public immutable SSVRegistry;
     ERC20 public immutable SSVToken;
+    AggregatorV3Interface internal immutable priceFeed;
 
     struct Validator {
         bytes pubkey;
@@ -38,14 +35,14 @@ contract StakingPool is Owned, ERC20 {
         bytes[] sharesPublicKeys;
         bytes[] sharesEncrypted;
         uint256 amount;
-        bool active;
+        IsActive active;
     }
 
     /* EVENTS */
     event ValidatorRegistered(bytes32 pubKeyHash, uint256 timestamp);
     event ValidatorRemoved(bytes32 pubKeyHash, uint256 timestamp);
     event ValidatorStakeDeposited(bytes32 pubKeyHash, uint256 timestamp);
-    event StakeAmountReached(uint256 timestamp);
+    event StakeReached(uint256 stakeCount);
 
     event RewardIndexUpdated(
         address indexed from,
@@ -57,52 +54,62 @@ contract StakingPool is Owned, ERC20 {
     event Claimed(address indexed from, uint256 amount, uint256 timestamp);
 
     /* ERRORS */
-    error InvalidEthAmount();
+    error InvalidAmount();
     error ValidatorAlreadyExists(bytes32 pubKeyHash, uint256 timestamp);
 
     constructor(
-        address _depositContract,
-        // address _token,
-        address _SSVToken,
-        address _SSVNetwork,
-        address _SSVRegistry,
-        address _priceFeedAddress
-    ) Owned(msg.sender) ERC20("Shared Token", "STKN", 18) {
-        depositContract = IDepositContract(_depositContract);
-        // token = StakingShareToken(_token);
-        SSVToken = ERC20(_SSVToken);
-        SSVRegistry = ISSVRegistry(_SSVRegistry);
-        SSVNetwork = ISSVNetwork(_SSVNetwork);
-
-        priceFeed = AggregatorV3Interface(_priceFeedAddress);
+        IDepositContract _depositContract,
+        ERC20 _SSVToken,
+        ISSVNetwork _SSVNetwork,
+        ISSVRegistry _SSVRegistry,
+        ERC20 _weth,
+        AggregatorV3Interface _priceFeedAddress
+    ) Owned(msg.sender) ERC4626(_weth, "pool SSV token", "PSSV") {
+        depositContract = _depositContract;
+        SSVToken = _SSVToken;
+        SSVRegistry = _SSVRegistry;
+        SSVNetwork = _SSVNetwork;
+        priceFeed = _priceFeedAddress;
     }
 
     receive() external payable {}
 
-    function stake() public payable {
-        if (msg.value == 0) {
-            revert InvalidEthAmount();
+    function stake(uint256 _amount) public payable {
+        if (msg.value > 0) {
+            if (_amount != msg.value) { revert InvalidAmount(); }
+            WETH(payable(address(asset))).deposit{value: _amount}();
+        } else {
+            if (_amount == 0) { revert InvalidAmount(); }
+           asset.transferFrom(msg.sender, address(this), _amount);
         }
 
-        _mint(msg.sender, msg.value);
+        uint256 remainder = asset.balanceOf(address(this)) - (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
 
-        emit Staked(msg.sender, msg.value, block.timestamp);
-
-        if (address(this).balance >= VALIDATOR_STAKE_AMOUNT) {
-            emit StakeAmountReached(block.timestamp);
+        if (remainder >= VALIDATOR_STAKE_AMOUNT) {
+            unchecked {
+                uint256 stakeCount = remainder / VALIDATOR_STAKE_AMOUNT;
+                totalValidatorStakes = totalValidatorStakes + stakeCount;
+                emit StakeReached(stakeCount);
+            }
         }
+
+        _mint(msg.sender, _amount);
+
+        emit Staked(msg.sender, _amount, block.timestamp);
     }
 
-    function unstake(uint256 amount) external {
-        _burn(msg.sender, amount);
+    function unstake(uint256 _amount) external {
+        _burn(msg.sender, _amount);
 
-        SafeTransferLib.safeTransferETH(msg.sender, amount);
+        asset.transferFrom(msg.sender, address(this), _amount);
 
-        emit Unstaked(msg.sender, amount, block.timestamp);
+        emit Unstaked(msg.sender, _amount, block.timestamp);
     }
 
     // todo
-    function claim() external {}
+    function claim() external {
+
+    }
 
     function registerValidator(
         bytes calldata pubKey,
@@ -113,7 +120,7 @@ contract StakingPool is Owned, ERC20 {
     ) external onlyOwner {
         bytes32 pubKeyHash = keccak256(pubKey);
 
-        if (validator[pubKeyHash].active) {
+        if (validators[pubKeyHash].active == IsActive.TRUE) {
             revert ValidatorAlreadyExists(pubKeyHash, block.timestamp);
         }
 
@@ -128,28 +135,31 @@ contract StakingPool is Owned, ERC20 {
             amount
         );
 
-        validator[pubKeyHash] = Validator(
+        validators[pubKeyHash] = Validator(
             pubKey,
             operatorIds,
             sharesPublicKeys,
             sharesEncrypted,
             amount,
-            true
+            IsActive.TRUE
         );
 
-        totalValidators++;
+        unchecked { totalValidators = totalValidators + 1; }
 
         // Emit an event to log the deposit of shares
         emit ValidatorRegistered(pubKeyHash, block.timestamp);
     }
 
-    // todo: revisar como implementar esto (si es que se puede)
     function removeValidator(bytes calldata pubKey) external onlyOwner {
         bytes32 pubKeyHash = keccak256(pubKey);
 
+        if (validators[pubKeyHash].active == IsActive.FALSE) {
+            revert ValidatorAlreadyExists(pubKeyHash, block.timestamp);
+        }
+
         SSVNetwork.removeValidator(pubKey);
 
-        delete validator[pubKeyHash];
+        delete validators[pubKeyHash];
 
         emit ValidatorRemoved(pubKeyHash, block.timestamp);
     }
@@ -168,10 +178,12 @@ contract StakingPool is Owned, ERC20 {
             deposit_data_root
         );
 
-        bytes32 pubKeyHash = keccak256(pubKey);
-
         // Emit an event to log the deposit of the public key
-        emit ValidatorStakeDeposited(pubKeyHash, block.timestamp);
+        emit ValidatorStakeDeposited(keccak256(pubKey), block.timestamp);
+    }
+
+    function totalAssets() public view override returns (uint256) {
+        return asset.balanceOf(address(this));
     }
 
     function getLatestPrice() public view returns (int256) {
