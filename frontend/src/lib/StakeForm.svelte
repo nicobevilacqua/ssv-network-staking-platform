@@ -1,0 +1,205 @@
+<script type="ts">
+  import {getStakingPoolContract} from "$utils/contracts";
+	import {signer, address, onExpectedNetwork} from "$store/wallet";
+	import {utils} from 'ethers';
+
+	import ConnectButton from "./ConnectButton.svelte";
+	import SwitchNetworkButton from "./SwitchNetworkButton.svelte";
+
+	const {formatEther} = utils;
+
+	let loaded = false;
+	let invalid = false;
+	let balance = 0;
+	let ethmountVal = 0;
+	let useMaxETHER = 0;
+	let userBalance = 0;
+	let outputStake = 0;
+	let vaultBalance = 0;
+	let currentVault = 0;
+	let progress = 0;
+	let minting = false;
+
+	let stakingContract;
+
+	function login() {}
+
+	function changeNetwork() {}
+
+	function mint() {}
+
+	$: if ($signer) {
+		load();
+	}
+
+  async function load() {
+		console.log("loading");
+		stakingContract = await getStakingPoolContract();
+	}
+
+</script>
+
+<section class="container mx-auto">
+	<div
+		class="mx-auto my-10 p-6 max-w-lg rounded-lg border border-gray-200 shadow-md "
+	>
+		<h5 class="mb-2 text-2xl font-bold tracking-tight ">
+			Stake
+		</h5>
+
+		<p class="mb-3 font-normal text-gray-900 dark:text-gray-400">
+			Stake your ETH to win rewards and to participate in Ethereum PoS
+		</p>
+
+		<hr />
+
+		<div class="flex justify-center flex-col mx-auto w-full text-center max-w-lg">
+			<div class="border rounded-lg flex flex-row mx-auto my-5">
+				<a
+					class="p-2 m-1 rounded-lg w-28 uppercase text-sm font-semibold  no-underline hover:no-underline bg-slate-300"
+					href="./">Mint</a
+				>
+				<a
+					class="p-2 m-1 rounded-lg w-28 uppercase text-sm font-semibold  no-underline hover:no-underline hover:bg-slate-100"
+					href="./redeem">Redeem</a
+				>
+			</div>
+			<div class="rounded-3xl bg-white shadow-sm w-full  mx-auto flex flex-col px-5 py-4 z-10">
+				<h1 class="uppercase text-black text-3xl my-2">Mint</h1>
+				<div class="border rounded-lg p-2 flex flex-col">
+					<div class="flex flex-row text-xs text-gray-700 justify-between items-center">
+						{#if loaded}
+							<div>ETH a stakear</div>
+							<div>Balance: {formatEther(balance || '0')}</div>
+						{:else}
+							<div class="animate-pulse w-16 bg-slate-200 h-4" />
+							<div class="animate-pulse w-20 bg-slate-200 h-4" />
+						{/if}
+					</div>
+					<div class="flex flex-row text-gray-700 justify-between pt-1 items-center">
+						<!-- {#if loaded} -->
+						<input
+							type="number"
+							placeholder="0"
+							min="0"
+							max={formatEther(balance || '0')}
+							disabled={!loaded}
+							bind:value={ethmountVal}
+							step="0.01"
+							class="text-4xl outline-none w-72 font-mono"
+						/>
+						<!-- {:else}
+              <div class="h-10 w-full bg-slate-200 animate-pulse"></div>
+            {/if} -->
+						<button
+							class="text-xs hover:border-gray-600 border-transparent border rounded px-1 mx-4 py-0 h-6 bg-slate-200"
+							on:click|preventDefault={loaded ? useMaxETHER : undefined}>MAX</button
+						>
+						<!-- <div class="flex flex-row items-center"> -->
+						<div class="text-xl font-semibold w-14">ETH</div>
+						<!-- </div> -->
+					</div>
+				</div>
+				<div class="text-left" />
+
+				<span class="text-black text-3xl text-center fill-black mx-auto py-2">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 384 512"
+						><path
+							d="M374.6 310.6l-160 160C208.4 476.9 200.2 480 192 480s-16.38-3.125-22.62-9.375l-160-160c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 370.8V64c0-17.69 14.33-31.1 31.1-31.1S224 46.31 224 64v306.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0S387.1 298.1 374.6 310.6z"
+						/></svg
+					>
+				</span>
+				<div class="border rounded-lg p-2 flex flex-col">
+					<div class="flex flex-row text-xs text-gray-700 justify-between">
+						<div>Output</div>
+						{#if loaded}
+							<div>Balance: {Number(formatEther(userBalance || '0')).toFixed(6)}</div>
+						{:else}
+							<div class="animate-pulse w-20 bg-slate-200 h-4" />
+						{/if}
+					</div>
+					<div class="flex flex-row text-gray-700 justify-between pt-1">
+						<input
+							type="number"
+							placeholder="0"
+							min="0"
+							value={Number(formatEther(outputStake || '0')).toFixed(8)}
+							readonly
+							class="text-4xl w-72 outline-none font-mono text-green-700"
+						/>
+						<div class="flex flex-row">
+							<div class="text-xl font-semibold w-14">vETH</div>
+						</div>
+					</div>
+				</div>
+				<div>
+					{#if !$onExpectedNetwork}
+						<SwitchNetworkButton />
+					{:else if !$address} 
+						<ConnectButton />
+					{:else}
+						<button
+							class="btn btn-primary btn-lg w-full rounded-xl py-4 font-semibold mt-4"
+							on:click|preventDefault={mint}
+							disabled={invalid}
+							class:cursor-wait={minting}>Mint</button
+						>
+					{/if}
+				</div>
+			</div>
+			<div class="-mt-8 pt-10 shadow-lg max-w-lg w-[96%] rounded mx-auto">
+				<div class="flex flex-col px-5 font-mono text-sm py-1">
+					<div class="flex justify-between pb-0.5">
+						<div class="">Current Vault</div>
+						{#if loaded}
+							<div class=""># {currentVault}</div>
+						{:else}
+							<div class="animate-pulse w-14 bg-slate-200 h-4" />
+						{/if}
+					</div>
+
+					<div class="flex justify-between pb-0.5">
+						<div class="">Target Stake</div>
+						<div class="">32 ETH</div>
+					</div>
+					<div class="flex justify-between pb-0.5">
+						<div class="">Expected APR</div>
+						<div class="">4.76%</div>
+					</div>
+					<div class="flex justify-between pb-0.5">
+						<div class="">Stake Duration</div>
+						<div class="">6 Months</div>
+					</div>
+					<div class="flex justify-between pb-0.5">
+						<div class="">Current stake</div>
+						{#if loaded}
+							<div class="">
+								{Number(formatEther(vaultBalance || '0')).toFixed(2)}<span class="pl-[3px]"
+									>ETH</span
+								>
+							</div>
+						{:else}
+							<div class="animate-pulse w-14 bg-slate-200 h-4" />
+						{/if}
+					</div>
+					<div class="flex justify-between py-0.5">
+						<div class="w-full h-6 bg-gray-200 rounded-full dark:bg-gray-700">
+							{#if loaded}
+								<div
+									class="bg-slate-500 h-6 text-base font-medium text-white text-center p-1 leading-none rounded-full"
+									style="width: {progress}%"
+								>
+									{#if progress > 10}
+										{progress}%
+									{/if}
+								</div>
+							{:else}
+								<!-- <div class="animate-pulse w-14 bg-slate-200 h-4"></div>-->
+							{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

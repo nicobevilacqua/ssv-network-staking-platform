@@ -1,18 +1,27 @@
-<script>
-	import Header from '$lib/header/Header.svelte';
-	import "../app.css";
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import {initTheme} from '$store/theme';
 
+	import '../app.postcss';
 
-	import { init, login, chainId, wallet, changeNetwork} from "$lib/eth.js";
+	import Header from '$lib/Header.svelte';
+	import Footer from '$lib/Footer.svelte';
+	import Notification from '$lib/Notification.svelte';
+	import ThemeSwitcher from "$lib/ThemeSwitcher.svelte";
 
-  import { onMount } from 'svelte';
-  onMount(() => {
-    init();
-  })
+	import { init } from '$store/wallet';
+
+	onMount(() => {
+		init();
+		initTheme();
+	});
 </script>
 
 <Header />
 
-<main>
+<main class="content flex-1 flex-col text-sm flex justify-center">
 	<slot />
 </main>
+
+<Footer />
+
