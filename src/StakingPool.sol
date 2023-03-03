@@ -72,8 +72,6 @@ contract StakingPool is Owned, ERC4626 {
         priceFeed = _priceFeedAddress;
     }
 
-    receive() external payable {}
-
     function stake(uint256 _amount) public payable {
         if (msg.value > 0) {
             if (_amount != msg.value) { revert InvalidAmount(); }
@@ -105,6 +103,8 @@ contract StakingPool is Owned, ERC4626 {
 
         emit Unstaked(msg.sender, _amount, block.timestamp);
     }
+
+    receive() external payable {}
 
     // todo
     function claim() external {
@@ -170,6 +170,8 @@ contract StakingPool is Owned, ERC4626 {
         bytes calldata signature,
         bytes32 deposit_data_root
     ) external onlyOwner {
+        WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
+
         // Deposit the validator to the deposit contract
         depositContract.deposit{value: VALIDATOR_STAKE_AMOUNT}(
             pubKey,
