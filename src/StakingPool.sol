@@ -15,13 +15,18 @@ import {IDepositContract} from "./interfaces/IDepositContract.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract StakingPool is Owned, ERC4626 {
-    enum IsActive{ NONE, FALSE, TRUE }
+    enum IsActive {
+        NONE,
+        FALSE,
+        TRUE
+    }
 
     uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 ether;
 
     mapping(bytes32 => Validator) public validators;
     uint256 public totalValidators;
     uint256 public totalValidatorStakes;
+    uint256 public totalEarned;
 
     IDepositContract public immutable depositContract;
     ISSVNetwork public immutable SSVNetwork;
@@ -74,14 +79,19 @@ contract StakingPool is Owned, ERC4626 {
 
     function stake(uint256 _amount) public payable {
         if (msg.value > 0) {
-            if (_amount != msg.value) { revert InvalidAmount(); }
+            if (_amount != msg.value) {
+                revert InvalidAmount();
+            }
             WETH(payable(address(asset))).deposit{value: _amount}();
         } else {
-            if (_amount == 0) { revert InvalidAmount(); }
-           asset.transferFrom(msg.sender, address(this), _amount);
+            if (_amount == 0) {
+                revert InvalidAmount();
+            }
+            asset.transferFrom(msg.sender, address(this), _amount);
         }
 
-        uint256 remainder = asset.balanceOf(address(this)) - (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
+        uint256 remainder = asset.balanceOf(address(this)) -
+            (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
 
         if (remainder >= VALIDATOR_STAKE_AMOUNT) {
             unchecked {
@@ -104,12 +114,12 @@ contract StakingPool is Owned, ERC4626 {
         emit Unstaked(msg.sender, _amount, block.timestamp);
     }
 
-    receive() external payable {}
+    receive() external payable {
+        totalEarned += msg.value;
+    }
 
     // todo
-    function claim() external {
-
-    }
+    function claim() external {}
 
     function registerValidator(
         bytes calldata pubKey,
@@ -144,7 +154,9 @@ contract StakingPool is Owned, ERC4626 {
             IsActive.TRUE
         );
 
-        unchecked { totalValidators = totalValidators + 1; }
+        unchecked {
+            totalValidators = totalValidators + 1;
+        }
 
         // Emit an event to log the deposit of shares
         emit ValidatorRegistered(pubKeyHash, block.timestamp);

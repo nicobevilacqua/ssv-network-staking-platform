@@ -1,3 +1,64 @@
+# StakingTogether 
+
+A decentralized, permissionless staking service that allows anyone to stake any amount of ether, receive rewards and contribute to the ecosystem health without any restrictions.
+
+## Tracks
+* Build a Staking Pool - SSV Network
+* Build a DVT-based Staking Service
+* Test locally with zero-config forking using Infura's free archive node access
+* Integrate Tenderly Web3 Gateway
+* Tenderly Simulation API Integration
+* Use fRPC to connect your dApp to Blockchain
+* Connect the world with Chainlink
+* Chainlink Functions
+* Build with Web3Auth
+
+## How to run the tests
+There're diffent ways to run tests
+### Forge test using a goerli's fork
+```sh
+source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
+```
+
+### Local deploy using ganache
+1 - Run ganache in one terminal
+```sh
+  ganache
+```
+
+2 - Deploy the contracts on ganache
+```sh
+source .env.local && forge script ./script/Deploy.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+```
+
+3 - Run the frontend
+```sh
+  yarn dev-frontend-local
+```
+
+### Deploy on a testnet
+1 - Deploy the contracts using tenderly gateway
+```sh
+source .env && forge script ./script/Deploy.s.sol --rpc-url $TENDERLY_GATEWAY --broadcast --private-key $PRIVATE_KEY --legacy
+```
+
+2 - Start the frontend
+```sh
+  yarn dev-frontend-remote
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Setup
 1 - Install https://github.com/ethereum/staking-deposit-cli
 
@@ -73,3 +134,18 @@ npm run run configs/quickstart_config.json
 ```sh
 source .env && forge script ./script/Deploy.s.sol --rpc-url http://127.0.01:8545 --broadcast --private-key 0xa545b25e3591733f315337baaf4d972104470122f39a441295d8378c6ee05edb
 ```
+
+
+
+
+
+### Test locally with zero-config forking using Infura's free archive node access
+- A list of any challenges or benefits you encountered while using Ganache
+
+- Judging will lean towards full MVPs and applications that interact with pre-deployed contracts
+
+
+
+
+
+https://github.com/fluencelabs/ethdenver-2023/blob/main/README.md
