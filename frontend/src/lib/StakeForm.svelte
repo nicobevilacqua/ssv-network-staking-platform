@@ -1,10 +1,12 @@
 <script type="ts">
   import {getStakingPoolContract} from "$utils/contracts";
 	import {signer, address, onExpectedNetwork, provider} from "$store/wallet";
-	import {BigNumber, utils} from 'ethers';
+	import {showNotification, NotificationType} from '$store/notifications';
+	import {BigNumber, Contract, utils} from 'ethers';
 
 	import ConnectButton from "./ConnectButton.svelte";
 	import SwitchNetworkButton from "./SwitchNetworkButton.svelte";
+	import {simulate} from '$utils/simulator';
 
 	const {formatEther} = utils;
 
@@ -13,21 +15,12 @@
 	let loaded = false;
 	let invalid = false;
 
-	let stakingContract;
+	let stakingContract: Contract | undefined;
 	let symbol: string = '';
 	let balance = BigNumber.from(0);
 	let assetsBalance = BigNumber.from(0);
 
-	$: if ($signer) {
-		load();
-	}
-
-	$: if ($address) {
-		load();
-	}
-
 	let inputAmount = 0;
-
 
 	function setMaxEther() {
 		inputAmount = Number(formatEther(balance));
@@ -55,8 +48,42 @@
 
 	let staking = false;
 	async function stake() {
+		if (!stakingContract) {
+			showNotification("Invalid Staking Pool Contract", {
+				type: NotificationType.Error
+			});
+			return;
+		}
 		staking = true;
-		console.log(inputAmount);
+		try {
+			const rawTransaction = await stakingContract.populateTransaction.claim();
+			const successfull = await simulate(rawTransaction);
+			if (!successfull) {
+				showNotification("The transaction will be reverted. Please, check the values", {
+					type: NotificationType.Error
+				});
+				return;
+			}
+			const tx = await stakingContract.claim();
+			const receipt = tx.wait();
+			console.log(receipt);
+			showNotification("Success", {
+				type: NotificationType.Check
+			});
+		} catch(error) {
+			console.error(error);
+			showNotification(error.message, {
+				type: NotificationType.Error
+			});
+		}
+	}
+
+	$: if ($signer) {
+		load();
+	}
+
+	$: if ($address) {
+		load();
 	}
 
 </script>
