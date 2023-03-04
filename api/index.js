@@ -9,14 +9,28 @@ const { STAKING_POOL_ADDRESS, PRIVATE_KEY, RPC_URL, KEYSTORE_PASSWORD } = proces
 
 const STAKING_POOL_ABI = [
 	'function registerValidator(bytes,uint32[],bytes[],bytes[],uint256) external',
-	'function depositValidatorStaking(bytes,bytes,bytes,bytes32) external',
-	'function registerValidatorAndDeposit(bytes,uint32[],bytes[],bytes[],uint256,bytes,bytes,bytes32)'
+	'function depositValidatorStaking(bytes,bytes,bytes,bytes32) external'
+	// 'function registerValidatorAndDeposit(bytes,uint32[],bytes[],bytes[],uint256,bytes,bytes,bytes32)'
 ];
 
+// 0x92e48e3c4934c2b74ac151c1128369a33df4686533f50318eb4766a4895bd57ed9c3c14e4a2d92a55bcf7bd1fc9139e4,
+// 0x0017a025aec8ebcdb76913a4378a141408282430ebe58533604df7fc703b8946,
+// 0xb7d6e13498d43bd9b1c4d6f759fcf1c1397a6626dca0c03a97cbe8345e45807f31292255dcfd5df7d1e333deba562bd408bbbb38a44bc201e9e12ce53c769153dffbb1cd7d59a4a40bea454dc49617f85c5f49f83a8bc3bbaae6d04a57b2aeb9,
+// 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b87;
+
 // const deposit = require('../config/deposits/deposit1.json');
-// console.log(deposit);
-// console.log(utils.toUtf8Bytes(deposit.deposit_data_root));
-// console.log(utils.formatBytes32String(deposit.deposit_data_root));
+// console.log(deposit.)
+// // // console.log(deposit);
+// console.log(
+// 	utils.hexlify(`0x${deposit.withdrawal_credentials}`),
+// 	utils.hexlify(`0x${deposit.signature}`),
+// 	utils.hexlify(`0x${deposit.deposit_data_root}`)
+// );
+// process.exit();
+
+// // 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b;
+// // 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b87;
+// // process.exit(1);
 
 function getProvider() {
 	const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -66,9 +80,9 @@ async function depositValidatorStaking(depositValidatorStakingData) {
 	const contract = getContract();
 	const tx = await contract.depositValidatorStaking(
 		depositValidatorStakingData.pubKey,
-		utils.hexlify(depositValidatorStakingData.withdrawal_credentials),
-		utils.hexlify(depositValidatorStakingData.signature),
-		utils.hexlify(depositValidatorStakingData.deposit_data_root),
+		`0x${depositValidatorStakingData.withdrawal_credentials}`,
+		`0x${depositValidatorStakingData.signature}`,
+		`0x${depositValidatorStakingData.deposit_data_root}`,
 		{ gasLimit: 1000000 }
 	);
 	const receipt = await tx.wait();
@@ -176,6 +190,10 @@ async function main() {
 			payload
 		});
 
+		// console.log(keyShares.data.publicKey);
+		// console.log(deposit.pubkey);
+		// process.exit();
+
 		const registerValidatorData = {
 			pubKey: keyShares.data.publicKey,
 			operatorIds: keyShares.data.operators.map(({ id }) => id),
@@ -199,6 +217,8 @@ async function main() {
 
 		// continue adding validators
 		balance = await provider.getBalance(contract.address);
+
+		console.log('done!');
 	}
 }
 
