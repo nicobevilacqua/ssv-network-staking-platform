@@ -149,3 +149,43 @@ source .env && forge script ./script/Deploy.s.sol --rpc-url http://127.0.01:8545
 
 
 https://github.com/fluencelabs/ethdenver-2023/blob/main/README.md
+
+
+### Add Rewards
+1 - On ganache (localy)
+```sh
+  source .env.local && forge script ./script/AddRewards.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+```
+
+2 - Remotely
+```sh
+  source .env.local && forge script ./script/AddRewards.s.sol --rpc-url $RPC_URL --broadcast --private-key $PRIVATE_KEY
+```
+
+### Stake
+1 - On ganache (localy)
+```sh
+  source .env.local && forge script ./script/Stake.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+```
+
+2 - Remotely
+```sh
+  source .env.local && forge script ./script/Stake.s.sol --rpc-url $RPC_URL --broadcast --private-key $PRIVATE_KEY
+```
+
+### Unstake
+1 - On ganache (localy)
+```sh
+  source .env.local && forge script ./script/Unstake.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+```
+
+2 - Remotely
+```sh
+  source .env.local && forge script ./script/Unstake.s.sol --rpc-url $RPC_URL --broadcast --private-key $PRIVATE_KEY
+```
+
+
+
+
+
+source .env.local && forge script ./script/AddRewards.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY

@@ -12,7 +12,9 @@ contract CounterScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        address depositContractAddress = vm.envAddress("DEPOSIT_CONTRACT_ADDRESS");
+        address depositContractAddress = vm.envAddress(
+            "DEPOSIT_CONTRACT_ADDRESS"
+        );
         address SSVTokenAddress = vm.envAddress("SSV_TOKEN_ADDRESS");
         address SSVNetworkAddress = vm.envAddress("SSV_NETWORK_ADDRESS");
         address SSVRegistryAddress = vm.envAddress("SSV_REGISTRY_ADDRESS");
