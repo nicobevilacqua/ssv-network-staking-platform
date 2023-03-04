@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import "src/StakingPool.sol";
 
-contract CounterScript is Script {
+contract DeployScript is Script {
     function setUp() public {}
 
     function run() public {
