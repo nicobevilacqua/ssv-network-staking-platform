@@ -78,8 +78,7 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     receive() external payable {
-        // only if is not weth
-        if (address(asset) != msg.sender) {
+        if (address(depositContract) == msg.sender) {
             totalEarned += msg.value;
         }
     }
@@ -94,12 +93,26 @@ contract StakingPool is Owned, ERC4626 {
         _calculateAssets(msg.value);
     }
 
-    function _calculateAssets(uint256 _amount) internal {
-        uint256 stakeCount = asset.balanceOf(address(this)) /
-            VALIDATOR_STAKE_AMOUNT;
+    function stake(uint256 amount) public {
+        if (amount == 0) {
+            revert InvalidAmount();
+        }
 
-        if (stakeCount > 0) {
-            emit StakeReached(stakeCount);
+        asset.transferFrom(msg.sender, address(this), amount);
+
+        _calculateAssets(amount);
+    }
+
+    function _calculateAssets(uint256 _amount) internal {
+        uint256 remainder = asset.balanceOf(address(this)) -
+            (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
+
+        if (remainder >= VALIDATOR_STAKE_AMOUNT) {
+            unchecked {
+                uint256 stakeCount = remainder / VALIDATOR_STAKE_AMOUNT;
+                totalValidatorStakes = totalValidatorStakes + stakeCount;
+                emit StakeReached(stakeCount);
+            }
         }
 
         totalValidatorStakes += _amount;
@@ -157,12 +170,12 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function registerValidator(
-        bytes memory pubKey,
-        uint32[] memory operatorIds,
-        bytes[] memory sharesPublicKeys,
-        bytes[] memory sharesEncrypted,
+        bytes calldata pubKey,
+        uint32[] calldata operatorIds,
+        bytes[] calldata sharesPublicKeys,
+        bytes[] calldata sharesEncrypted,
         uint256 amount
-    ) public onlyOwner {
+    ) external onlyOwner {
         bytes32 pubKeyHash = keccak256(pubKey);
 
         if (validators[pubKeyHash].active == IsActive.TRUE) {
@@ -212,11 +225,11 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function depositValidatorStaking(
-        bytes memory pubKey,
-        bytes memory withdrawal_credentials,
-        bytes memory signature,
+        bytes calldata pubKey,
+        bytes calldata withdrawal_credentials,
+        bytes calldata signature,
         bytes32 deposit_data_root
-    ) public onlyOwner {
+    ) external onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
         // Deposit the validator to the deposit contract
         depositContract.deposit{value: VALIDATOR_STAKE_AMOUNT}(
@@ -268,5 +281,39 @@ contract StakingPool is Owned, ERC4626 {
     {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (calcRewards(who) * price) / priceDecimals;
+    }
+
+    function totalStakeInUSD(address who) external view returns(uint256 amount) {
+        return asset.balanceOf(address(this)) * getLatestPrice();
+    }
+
+    function totalEarnedInUSD(address who) external view returns(uint256 amount) {
+        return totalEarned * getLatestPrice();
+    }
+
+    // Removed functions
+
+    function deposit(uint256 assets, address receiver) public override returns (uint256 shares) {
+        revert("Can't deposit");
+    }
+
+    function mint(uint256 shares, address receiver) public override returns (uint256 assets) {
+        revert("Can't deposit");
+    }
+
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner
+    ) public override returns (uint256 shares) {
+        revert("Can't deposit");
+    }
+
+    function redeem(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public override returns (uint256 assets) {
+        revert("Can't deposit");
     }
 }
