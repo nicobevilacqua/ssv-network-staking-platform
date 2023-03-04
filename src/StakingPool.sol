@@ -33,6 +33,7 @@ contract StakingPool is Owned, ERC4626 {
     uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 ether;
 
     mapping(bytes32 => Validator) public validators;
+    mapping(address => uint256) public userClaims;
     uint256 public totalValidators;
     uint256 public totalEarned;
 
@@ -132,6 +133,12 @@ contract StakingPool is Owned, ERC4626 {
     function _claim() internal {
         uint256 amount = calcRewards(msg.sender);
 
+        if (amount == 0) {
+            return;
+        }
+
+        totalEarned -= amount;
+        userClaims[msg.sender] += amount;
         payable(msg.sender).transfer(amount);
 
         emit Claimed(msg.sender, amount, block.timestamp);
@@ -259,9 +266,11 @@ contract StakingPool is Owned, ERC4626 {
         return (totalEarned * price) / priceDecimals;
     }
 
-    function calcRewards(address who) public view returns (uint256) {
+    function calcRewards(address who) public view returns (uint256 amount) {
         uint256 percSender = (balanceOf[who] * 1000) / totalSupply;
-        return (percSender * totalEarned) / 1000;
+
+        amount = (percSender * totalEarned) / 1000;
+        amount -= userClaims[msg.sender];
     }
 
     function calcRewardsInUSD(address who)
