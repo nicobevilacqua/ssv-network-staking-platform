@@ -231,7 +231,6 @@ contract StakingPool is Owned, ERC4626 {
         bytes32 deposit_data_root
     ) public onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
-
         // Deposit the validator to the deposit contract
         depositContract.deposit{value: VALIDATOR_STAKE_AMOUNT}(
             pubKey,
@@ -239,7 +238,6 @@ contract StakingPool is Owned, ERC4626 {
             signature,
             deposit_data_root
         );
-
         // Emit an event to log the deposit of the public key
         emit ValidatorStakeDeposited(keccak256(pubKey), block.timestamp);
     }
