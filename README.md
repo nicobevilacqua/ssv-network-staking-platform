@@ -38,7 +38,7 @@ source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
 ### Local deployment using anvil
 1 - Run anvil
 ```sh
-  source .env.local && anvil --fork-url $INFURA_RPC_URL
+  source .env.local && anvil --fork-url $INFURA_RPC_URL --chain-id 31337
 ```
 
 2 - Deploy the contracts
