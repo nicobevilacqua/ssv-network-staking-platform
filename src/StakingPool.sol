@@ -247,21 +247,21 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function totalAssetsInUSD() public view returns (uint256) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (totalAssets() * price) / priceDecimals;
+        (uint256 price, uint256 priceDecimals) = getLatestPrice();
+        return (totalSupply * price) / priceDecimals;
     }
 
     function stakeOf(address who) external view returns (uint256 amount) {
-        return asset.balanceOf(who);
+        return balanceOf[who];
     }
 
     function stakeOfInUSD(address who) external view returns (uint256 amount) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (asset.balanceOf(who) * price) / priceDecimals;
+        (uint256 price, uint256 priceDecimals) = getLatestPrice();
+        return (balanceOf[who] * price) / priceDecimals;
     }
 
     function totalEarnedInUSD() external view returns (uint256 amount) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        (uint256 price, uint256 priceDecimals) = getLatestPrice();
         return (totalEarned * price) / priceDecimals;
     }
 
@@ -275,21 +275,21 @@ contract StakingPool is Owned, ERC4626 {
         view
         returns (uint256 amount)
     {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        (uint256 price, uint256 priceDecimals) = getLatestPrice();
         return (calcRewards(who) * price) / priceDecimals;
     }
 
     function getLatestPrice()
         public
         view
-        returns (uint256 price, uint8 priceDecimals)
+        returns (uint256 price, uint256 priceDecimals)
     {
         (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
         require(inputPrice > 0, "Bad price");
 
         price = uint256(inputPrice);
 
-        priceDecimals = priceFeed.decimals();
+        priceDecimals = 1 * 10**priceFeed.decimals();
     }
 
     // Removed functions
