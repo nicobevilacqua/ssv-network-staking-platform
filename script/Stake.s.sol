@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import "src/StakingPool.sol";
 
-contract AddRewards is Script {
+contract StakeScript is Script {
     StakingPool private stakingPool;
 
     function setUp() public {}

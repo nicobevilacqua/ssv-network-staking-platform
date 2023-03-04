@@ -51,16 +51,16 @@
 		}
 		claming = true;
 		try {
-			const rawTransaction = await stakingContract.populateTransaction.claim();
-			const successfull = await simulate(rawTransaction);
-			if (!successfull) {
-				showNotification("The transaction will be reverted. Please, check the values", {
-					type: NotificationType.Error
-				});
-				return;
-			}
+			// const rawTransaction = await stakingContract.populateTransaction.claim();
+			// const successfull = await simulate(rawTransaction);
+			// if (!successfull) {
+			// 	showNotification("The transaction will be reverted. Please, check the values", {
+			// 		type: NotificationType.Error
+			// 	});
+			// 	return;
+			// }
 			const tx = await stakingContract.claim();
-			const receipt = tx.wait();
+			const receipt = await tx.wait();
 			console.log(receipt);
 			showNotification("Success", {
 				type: NotificationType.Check
@@ -90,7 +90,7 @@
 				return;
 			}
 			const tx = await stakingContract.unstake(totalStaked);
-			const receipt = tx.wait();
+			const receipt = await tx.wait();
 			console.log(receipt);
 			showNotification("Success", {
 				type: NotificationType.Check

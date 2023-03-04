@@ -94,7 +94,7 @@
 				<div class="w-10 h-10">
 					<svelte:component this={icon} />
 				</div>
-				<div class="ml-3 text-sm font-normal">{$message}</div>
+				<div class="ml-3 text-sm font-normal">{@html $message}</div>
 			</div>
 
 			{#if !$config.duration}

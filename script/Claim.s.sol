@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import "src/StakingPool.sol";
 
-contract UnstakeScript is Script {
+contract ClaimScript is Script {
     StakingPool private stakingPool;
 
     function setUp() public {}
@@ -14,13 +14,11 @@ contract UnstakeScript is Script {
     function run() public {
         address stakingPoolAddress = vm.envAddress("SCA");
 
-        uint256 amount = vm.envUint("AMOUNT");
-
         stakingPool = StakingPool(payable(stakingPoolAddress));
 
         vm.startBroadcast();
 
-        stakingPool.unstake(amount * 1 ether);
+        stakingPool.claim();
 
         vm.stopBroadcast();
     }

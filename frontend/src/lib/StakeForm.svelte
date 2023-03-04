@@ -73,9 +73,9 @@
 			const tx = await stakingContract.stake({
 				value: utils.parseEther(inputAmount.toString()),
 			});
-			const receipt = tx.wait();
-			console.log(receipt);
-			showNotification("Success", {
+			const { transactionHash } = await tx.wait();
+			
+			showNotification(`Success: Tx: <a href="https://goerli.etherscan.io/tx/${transactionHash}">${transactionHash}</a>`, {
 				type: NotificationType.Check
 			});
 		} catch(error) {
