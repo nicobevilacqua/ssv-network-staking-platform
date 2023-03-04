@@ -236,4 +236,37 @@ contract StakingPool is Owned, ERC4626 {
         return calcRewards(who) * getLatestPrice();
     }
 
+    function totalStakeInUSD(address who) external view returns(uint256 amount) {
+        return asset.balanceOf(address(this)) * getLatestPrice();
+    }
+
+    function totalEarnedInUSD(address who) external view returns(uint256 amount) {
+        return totalEarned * getLatestPrice();
+    }
+
+    // Removed functions
+
+    function deposit(uint256 assets, address receiver) public override returns (uint256 shares) {
+        revert("Can't deposit");
+    }
+
+    function mint(uint256 shares, address receiver) public override returns (uint256 assets) {
+        revert("Can't deposit");
+    }
+
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner
+    ) public override returns (uint256 shares) {
+        revert("Can't deposit");
+    }
+
+    function redeem(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public override returns (uint256 assets) {
+        revert("Can't deposit");
+    }
 }
