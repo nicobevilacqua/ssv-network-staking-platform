@@ -78,7 +78,9 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     receive() external payable {
-        totalEarned += msg.value;
+        if (address(depositContract) == msg.sender) {
+            totalEarned += msg.value;
+        }
     }
 
     function stake() public payable {
@@ -119,6 +121,7 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function unstake(uint256 _amount) external {
+        _claim();
         _burn(msg.sender, _amount);
 
         asset.transferFrom(address(this), msg.sender, _amount);
@@ -126,8 +129,17 @@ contract StakingPool is Owned, ERC4626 {
         emit Unstaked(msg.sender, _amount, block.timestamp);
     }
 
-    // todo
-    function claim() external {}
+    function claim() external {
+        _claim();
+    }
+
+    function _claim() internal {
+        uint256 amount = calcRewards(msg.sender);
+
+        payable(msg.sender).transfer(amount);
+
+        emit Claimed(msg.sender, amount, block.timestamp);
+    }
 
     function registerValidatorAndDeposit(
         bytes memory pubKey,
@@ -234,8 +246,20 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
-    function getLatestPrice() public view returns (int256) {
+    function getLatestPrice() public view returns (uint256) {
         (, int256 price, , , ) = priceFeed.latestRoundData();
-        return price;
+        require(price > 0, "Bad price");
+
+        return uint256(price);
     }
+
+    function calcRewards(address who) public view returns(uint256 amount) {
+        uint256 percSender = balanceOf[msg.sender] * 1000 / totalAssets();
+        return percSender * totalEarned / 1000;
+    }
+
+    function calcRewardsInUSD(address who) external view returns(uint256 amount) {
+        return calcRewards(who) * getLatestPrice();
+    }
+
 }
