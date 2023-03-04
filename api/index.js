@@ -5,32 +5,14 @@ const axios = require('axios');
 const { SSVKeys } = require('ssv-keys');
 const { Contract, ethers, Wallet, utils } = require('ethers');
 
-const { STAKING_POOL_ADDRESS, PRIVATE_KEY, RPC_URL, KEYSTORE_PASSWORD } = process.env;
+const { STAKING_POOL_ADDRESS, PRIVATE_KEY, RPC_URL, KEYSTORE_PASSWORD, WETH_ADDRESS } = process.env;
 
 const STAKING_POOL_ABI = [
 	'function registerValidator(bytes,uint32[],bytes[],bytes[],uint256) external',
 	'function depositValidatorStaking(bytes,bytes,bytes,bytes32) external'
-	// 'function registerValidatorAndDeposit(bytes,uint32[],bytes[],bytes[],uint256,bytes,bytes,bytes32)'
 ];
 
-// 0x92e48e3c4934c2b74ac151c1128369a33df4686533f50318eb4766a4895bd57ed9c3c14e4a2d92a55bcf7bd1fc9139e4,
-// 0x0017a025aec8ebcdb76913a4378a141408282430ebe58533604df7fc703b8946,
-// 0xb7d6e13498d43bd9b1c4d6f759fcf1c1397a6626dca0c03a97cbe8345e45807f31292255dcfd5df7d1e333deba562bd408bbbb38a44bc201e9e12ce53c769153dffbb1cd7d59a4a40bea454dc49617f85c5f49f83a8bc3bbaae6d04a57b2aeb9,
-// 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b87;
-
-// const deposit = require('../config/deposits/deposit1.json');
-// console.log(deposit.)
-// // // console.log(deposit);
-// console.log(
-// 	utils.hexlify(`0x${deposit.withdrawal_credentials}`),
-// 	utils.hexlify(`0x${deposit.signature}`),
-// 	utils.hexlify(`0x${deposit.deposit_data_root}`)
-// );
-// process.exit();
-
-// // 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b;
-// // 0x5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b87;
-// // process.exit(1);
+const ERC20_ABI = [`function balanceOf(address) view returns(uint256)`];
 
 function getProvider() {
 	const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -41,6 +23,13 @@ function getContract() {
 	const provider = getProvider();
 	const signer = new Wallet(PRIVATE_KEY, provider);
 	const contractInstance = new Contract(STAKING_POOL_ADDRESS, STAKING_POOL_ABI, signer);
+	return contractInstance;
+}
+
+function getWETHContract() {
+	const provider = getProvider();
+	const signer = new Wallet(PRIVATE_KEY, provider);
+	const contractInstance = new Contract(WETH_ADDRESS, ERC20_ABI, signer);
 	return contractInstance;
 }
 
@@ -144,8 +133,8 @@ function generateValidatorData() {
 
 async function main() {
 	const contract = getContract();
-	const provider = getProvider();
-	let balance = await provider.getBalance(contract.address);
+	const weth = getWETHContract();
+	let balance = await weth.balanceOf(contract.address);
 
 	console.log('current balance', utils.formatEther(balance));
 
@@ -215,10 +204,11 @@ async function main() {
 		await depositValidatorStaking(depositValidatorStakingData);
 		console.log('validator added');
 
-		// continue adding validators
-		balance = await provider.getBalance(contract.address);
-
 		console.log('done!');
+
+		// continue adding validators
+		balance = await weth.balanceOf(contract.address);
+		console.log('current balance', utils.formatEther(balance));
 	}
 }
 
