@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "forge-std/Script.sol";
 import "forge-std/console.sol";
 
-import {StakingPool} from "src/StakingPool.sol";
+import "src/StakingPool.sol";
 
 contract Stake is Script {
     StakingPool private stakingPool;
@@ -17,7 +17,7 @@ contract Stake is Script {
     function run() public {
         vm.startBroadcast();
         uint256 amount = 32 ether;
-        stakingPool.stake = (amount);
+        stakingPool.stake(amount);
         vm.stopBroadcast();
     }
 }
