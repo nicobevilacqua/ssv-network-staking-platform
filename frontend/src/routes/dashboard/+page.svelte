@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LastDeposits from "$lib/LastDeposits.svelte";
+	// import LastDeposits from "$lib/LastDeposits.svelte";
 	import {getStakingPoolContract} from "$utils/contracts";
 	import {signer, address, provider} from "$store/wallet";
 	import {BigNumber, utils} from 'ethers';
@@ -7,6 +7,7 @@
 
 	let loading = false;
 	let stakingContract; 
+
 	let symbol: string = '';
 	let totalEarned = BigNumber.from(0);
 	let totalEarnedInUSD = BigNumber.from(0);
@@ -29,8 +30,8 @@
 		[totalEarned, totalEarnedInUSD, totalStaked, totalStakedInUSD, symbol] = await Promise.all([
 			stakingContract.calcRewards($address),
 			stakingContract.calcRewardsInUSD($address),
-			stakingContract.balanceOf($address),
-			stakingContract.totalStakedInUSD($address),
+			stakingContract.stakeOf($address),
+			stakingContract.stakeOfInUSD($address),
 			stakingContract.symbol(),
 		]);
 	}
@@ -69,7 +70,7 @@
 						disabled={totalStaked.eq(0)}
 					>Unstake</button>
 				{:else}
-					<p class="">You have not staked anything yet</p>
+					<p class="font-bold">You have not staked anything yet.</p>
 				{/if}
 			</div>
 		</div>
@@ -88,11 +89,10 @@
 						disabled={totalEarned.eq(0)}
 					>Claim</button>
 				{:else}
-					<p class="">You have not earned anything yet</p>
+					<p class="font-bold">You have not earned anything yet.</p>
 				{/if}
 			</div>
 		</div>
 	</div>
-	<LastDeposits />
-	
+	<!-- <LastDeposits /> -->
 </div>

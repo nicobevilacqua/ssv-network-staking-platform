@@ -1,17 +1,16 @@
 <script lang="ts">
 	import {address} from "$store/wallet";
 	import {getStakingPoolContract} from '$utils/contracts';
-	import LastDeposits from "$lib/LastDeposits.svelte";
+	// import LastDeposits from "$lib/LastDeposits.svelte";
 	import {BigNumber, utils} from 'ethers';
 
 	let stakingPoolContract;
 	
-	let totalValidatorStakes = BigNumber.from(0);
-	let totalStakedInUSD = BigNumber.from(0);
-
 	let totalEarned = BigNumber.from(0);
-	let totalValidators = BigNumber.from(0);
 	let totalEarnedInUSD = BigNumber.from(0);
+	let totalStaked = BigNumber.from(0);
+	let totalStakedInUSD = BigNumber.from(0);
+	let totalValidators = BigNumber.from(0);
 
 	let loading = false;
 
@@ -22,19 +21,13 @@
 			throw new Error('contract error');
 		}
 
-		[totalValidatorStakes] = await Promise.all([
-			stakingPoolContract.totalValidatorStakes()
+		[totalEarned, totalEarnedInUSD, totalStaked, totalStakedInUSD, totalValidators] = await Promise.all([
+				stakingPoolContract.totalEarned(),
+				stakingPoolContract.totalEarnedInUSD(),
+				stakingPoolContract.totalAssets(),
+				stakingPoolContract.totalAssetsInUSD(),			
+				stakingPoolContract.totalValidators(),
 		]);
-
-		debugger;
-
-		// [totalEarned, totalValidators, totalValidatorStakes/*, totalStakedInUSD*/, totalEarnedInUSD] = await Promise.all([
-		// 		stakingPoolContract.totalEarned(),
-		// 		stakingPoolContract.totalValidators(),
-		// 		stakingPoolContract.totalValidatorStakes(),
-		// 		// stakingPoolContract.totalStakedInUSD(),
-		// 		stakingPoolContract.totalEarnedInUSD(),
-		// ]);
 
 		loading = false;
 	}
@@ -69,7 +62,7 @@
 	<div class="flex flex-row justify-around w-full my-5">
 		<div class="flex flex-col justify-center">
 			<p class="text-2xl font-bold  text-center">
-				{utils.formatEther(totalValidatorStakes)} ETH
+				{utils.formatEther(totalStaked)} ETH
 			</p>
 			<p class="text-center">{utils.formatEther(totalStakedInUSD)} USD</p>
 			<p class="uppercase text-center">
@@ -92,4 +85,4 @@
 	</div>
 </div>
 
-<LastDeposits />
+<!-- <LastDeposits /> -->

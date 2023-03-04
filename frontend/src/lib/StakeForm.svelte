@@ -151,9 +151,10 @@
 						<ConnectButton class="btn-big w-full" />
 					{:else}
 						<button
+							type="button"
 							class="btn btn-primary btn-lg w-full rounded-xl py-4 font-semibold mt-4"
 							class:loading={staking}
-							on:click|preventDefault={stake}
+							on:click={stake}
 							disabled={invalid || staking || (!inputAmount || inputAmount === 0)}
 							class:cursor-wait={staking}
 						>
