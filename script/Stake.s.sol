@@ -6,18 +6,22 @@ import "forge-std/console.sol";
 
 import "src/StakingPool.sol";
 
-contract Stake is Script {
+contract AddRewards is Script {
     StakingPool private stakingPool;
 
-    function setUp() public {
-        address stakingPoolAddress = vm.envAddress("STAKING_POOL_ADDRESS");
-        stakingPool = StakingPool(payable(stakingPoolAddress));
-    }
+    function setUp() public {}
 
     function run() public {
+        address stakingPoolAddress = vm.envAddress("SCA");
+
+        uint256 amount = vm.envUint("AMOUNT");
+
+        stakingPool = StakingPool(payable(stakingPoolAddress));
+
         vm.startBroadcast();
-        uint256 amount = 32 ether;
-        stakingPool.stake(amount);
+
+        stakingPool.stake{value: amount * 1 ether}();
+
         vm.stopBroadcast();
     }
 }

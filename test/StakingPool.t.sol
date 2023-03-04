@@ -60,11 +60,10 @@ contract StakingPoolTest is Test, StakingDataMock {
     }
 
     function testStakingPool() external {
-        assertEq(10, stakingPool.getLatestPrice());
-
         address bob = makeAddr("bob");
         deal(bob, 100 ether);
 
+        vm.prank(bob);
         stakingPool.stake{value: 32 ether}();
 
         stakingPool.depositValidatorStaking(

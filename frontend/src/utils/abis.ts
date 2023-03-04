@@ -5,7 +5,7 @@ export const ERC20_ABI = [
 ];
 
 export const STAKING_POOL_ABI = [
-	'function totalValidatorStakes() view returns(uint256)',
+	'function totalValidatorStakes() view returns (uint256)',
 	'function totalValidators() view returns(uint256)',
 	'function totalEarned() view returns(uint256)',
 	'function symbol() view returns (string)',
@@ -13,8 +13,10 @@ export const STAKING_POOL_ABI = [
 	'function stake()',
 	'function claim()',
 	'function unstake(uint256)',
-	'function getLatestPrice() view returns (int256)',
 	'function calcRewards(address) view returns (uint256)',
 	'function calcRewardsInUSD(address) view returns (uint256)',
-	'function getLatestPrice() view returns (uint256)'
+	'function getLatestPrice() view returns (uint256)',
+	'function totalEarnedInUSD() view returns (uint256)',
+	'function totalStakedInUSD() view returns (uint256)',
+	'function stakedAmountInUSD(address) view returns (uint256)'
 ];

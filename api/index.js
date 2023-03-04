@@ -9,7 +9,7 @@ const { STAKING_POOL_ADDRESS, PRIVATE_KEY, RPC_URL, KEYSTORE_PASSWORD } = proces
 
 const STAKING_POOL_ABI = [
 	'function registerValidator(bytes,uint32[],bytes[],bytes[],uint256) external',
-	'function depositValidatorStaking(bytes,bytes,bytes,bytes) external',
+	'function depositValidatorStaking(bytes,bytes,bytes,bytes32) external',
 	'function registerValidatorAndDeposit(bytes,uint32[],bytes[],bytes[],uint256,bytes,bytes,bytes32)'
 ];
 
@@ -68,8 +68,8 @@ async function depositValidatorStaking(depositValidatorStakingData) {
 		depositValidatorStakingData.pubKey,
 		utils.hexlify(depositValidatorStakingData.withdrawal_credentials),
 		utils.hexlify(depositValidatorStakingData.signature),
-		utils.hexlify(depositValidatorStakingData.deposit_data_root)
-		, { gasLimit: 1000000}
+		utils.hexlify(depositValidatorStakingData.deposit_data_root),
+		{ gasLimit: 1000000 }
 	);
 	const receipt = await tx.wait();
 	return receipt;

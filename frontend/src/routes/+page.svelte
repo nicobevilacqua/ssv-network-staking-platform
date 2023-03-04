@@ -2,12 +2,16 @@
 	import {address} from "$store/wallet";
 	import {getStakingPoolContract} from '$utils/contracts';
 	import LastDeposits from "$lib/LastDeposits.svelte";
-	import {utils} from 'ethers';
+	import {BigNumber, utils} from 'ethers';
 
 	let stakingPoolContract;
-	let totalEarned = 0;
-	let totalValidators = 0;
-	let totalValidatorStakes = 0;
+	
+	let totalValidatorStakes = BigNumber.from(0);
+	let totalStakedInUSD = BigNumber.from(0);
+
+	let totalEarned = BigNumber.from(0);
+	let totalValidators = BigNumber.from(0);
+	let totalEarnedInUSD = BigNumber.from(0);
 
 	let loading = false;
 
@@ -18,11 +22,19 @@
 			throw new Error('contract error');
 		}
 
-		[totalEarned, totalValidators, totalValidatorStakes] = await Promise.all([
-				stakingPoolContract.totalEarned(),
-				stakingPoolContract.totalValidators(),
-				stakingPoolContract.totalValidatorStakes(),
+		[totalValidatorStakes] = await Promise.all([
+			stakingPoolContract.totalValidatorStakes()
 		]);
+
+		debugger;
+
+		// [totalEarned, totalValidators, totalValidatorStakes/*, totalStakedInUSD*/, totalEarnedInUSD] = await Promise.all([
+		// 		stakingPoolContract.totalEarned(),
+		// 		stakingPoolContract.totalValidators(),
+		// 		stakingPoolContract.totalValidatorStakes(),
+		// 		// stakingPoolContract.totalStakedInUSD(),
+		// 		stakingPoolContract.totalEarnedInUSD(),
+		// ]);
 
 		loading = false;
 	}
@@ -59,6 +71,7 @@
 			<p class="text-2xl font-bold  text-center">
 				{utils.formatEther(totalValidatorStakes)} ETH
 			</p>
+			<p class="text-center">{utils.formatEther(totalStakedInUSD)} USD</p>
 			<p class="uppercase text-center">
 				Total staked
 			</p>
@@ -73,6 +86,7 @@
 			<p class="text-2xl font-bold  text-center">
 				{utils.formatEther(totalEarned)} ETH
 			</p>
+			<p class="text-center">{utils.formatEther(totalEarnedInUSD)} USD</p>
 			<p class="uppercase text-center">rewards earned</p>
 		</div>
 	</div>

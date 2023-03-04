@@ -94,27 +94,15 @@ contract StakingPool is Owned, ERC4626 {
         _calculateAssets(msg.value);
     }
 
-    function stake(uint256 amount) public {
-        if (amount == 0) {
-            revert InvalidAmount();
-        }
-
-        asset.transferFrom(msg.sender, address(this), amount);
-
-        _calculateAssets(amount);
-    }
-
     function _calculateAssets(uint256 _amount) internal {
-        uint256 remainder = asset.balanceOf(address(this)) -
-            (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
+        uint256 stakeCount = asset.balanceOf(address(this)) /
+            VALIDATOR_STAKE_AMOUNT;
 
-        if (remainder >= VALIDATOR_STAKE_AMOUNT) {
-            unchecked {
-                uint256 stakeCount = remainder / VALIDATOR_STAKE_AMOUNT;
-                totalValidatorStakes = totalValidatorStakes + stakeCount;
-                emit StakeReached(stakeCount);
-            }
+        if (stakeCount > 0) {
+            emit StakeReached(stakeCount);
         }
+
+        totalValidatorStakes += _amount;
 
         _mint(msg.sender, _amount);
 
@@ -150,7 +138,7 @@ contract StakingPool is Owned, ERC4626 {
         uint256 amount,
         bytes memory withdrawal_credentials,
         bytes memory signature,
-        bytes memory deposit_data_root
+        bytes32 deposit_data_root
     ) external onlyOwner {
         registerValidator(
             pubKey,
@@ -227,7 +215,7 @@ contract StakingPool is Owned, ERC4626 {
         bytes memory pubKey,
         bytes memory withdrawal_credentials,
         bytes memory signature,
-        bytes memory deposit_data_root
+        bytes32 deposit_data_root
     ) public onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
 
@@ -247,18 +235,30 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
-    function totalStakedInUSD(address who) public view returns (uint256) {
-        return asset.balanceOf(who) * getLatestPrice();
+    function totalStakedIn(address who) public view returns (uint256) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (asset.balanceOf(who) * price) / priceDecimals;
     }
 
-    function getLatestPrice() public view returns (uint256) {
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        require(price > 0, "Bad price");
-
-        return uint256(price);
+    function totalEarnedInUSD() public view returns (uint256) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (totalEarned * price) / priceDecimals;
     }
 
-    function calcRewards(address who) public view returns (uint256 amount) {
+    function getLatestPrice()
+        public
+        view
+        returns (uint256 price, uint8 priceDecimals)
+    {
+        (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
+        require(inputPrice > 0, "Bad price");
+
+        price = uint256(inputPrice);
+
+        priceDecimals = priceFeed.decimals();
+    }
+
+    function calcRewards(address who) public view returns (uint256) {
         uint256 percSender = (balanceOf[who] * 1000) / totalAssets();
         return (percSender * totalEarned) / 1000;
     }
@@ -268,6 +268,7 @@ contract StakingPool is Owned, ERC4626 {
         view
         returns (uint256 amount)
     {
-        return calcRewards(who) * getLatestPrice();
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (calcRewards(who) * price) / priceDecimals;
     }
 }
