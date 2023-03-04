@@ -34,7 +34,6 @@ contract StakingPool is Owned, ERC4626 {
 
     mapping(bytes32 => Validator) public validators;
     uint256 public totalValidators;
-    uint256 public totalValidatorStakes;
     uint256 public totalEarned;
 
     IDepositContract public immutable depositContract;
@@ -104,18 +103,13 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function _calculateAssets(uint256 _amount) internal {
-        uint256 remainder = asset.balanceOf(address(this)) -
-            (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
+        uint256 cBalance = asset.balanceOf(address(this));
+        uint256 stakes = (cBalance - _amount) / VALIDATOR_STAKE_AMOUNT;
+        uint256 remainder = cBalance - stakes * VALIDATOR_STAKE_AMOUNT;
 
         if (remainder >= VALIDATOR_STAKE_AMOUNT) {
-            unchecked {
-                uint256 stakeCount = remainder / VALIDATOR_STAKE_AMOUNT;
-                totalValidatorStakes = totalValidatorStakes + stakeCount;
-                emit StakeReached(stakeCount);
-            }
+            emit StakeReached(remainder / VALIDATOR_STAKE_AMOUNT);
         }
-
-        totalValidatorStakes += _amount;
 
         _mint(msg.sender, _amount);
 
