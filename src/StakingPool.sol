@@ -251,21 +251,16 @@ contract StakingPool is Owned, ERC4626 {
         return (totalAssets() * price) / priceDecimals;
     }
 
-    function totalEarnedInUSD() public view returns (uint256) {
+    function stakeOf(address who) external view returns (uint256 amount) {
+        return asset.balanceOf(who);
+    }
+
+    function stakeOfInUSD(address who) external view returns (uint256 amount) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (totalEarned * price) / priceDecimals;
+        return (asset.balanceOf(who) * price) / priceDecimals;
     }
 
-    function stakeOf(address who) external view returns(uint256 amount) {
-        return asset.balanceOf(address(this);
-    }
-
-    function stakeOfInUSD(address who) external view returns(uint256 amount) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (asset.balanceOf(address(this)) * price) / priceDecimals;
-    }
-
-    function totalEarnedInUSD(address who) external view returns(uint256 amount) {
+    function totalEarnedInUSD() external view returns (uint256 amount) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (totalEarned * price) / priceDecimals;
     }
@@ -275,12 +270,20 @@ contract StakingPool is Owned, ERC4626 {
         return (percSender * totalEarned) / 1000;
     }
 
-    function calcRewardsInUSD(address who) external view returns (uint256 amount) {
+    function calcRewardsInUSD(address who)
+        external
+        view
+        returns (uint256 amount)
+    {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (calcRewards(who) * price) / priceDecimals;
     }
 
-    function getLatestPrice() public view returns (uint256 price, uint8 priceDecimals) {
+    function getLatestPrice()
+        public
+        view
+        returns (uint256 price, uint8 priceDecimals)
+    {
         (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
         require(inputPrice > 0, "Bad price");
 
@@ -299,11 +302,19 @@ contract StakingPool is Owned, ERC4626 {
         revert("Can't mint");
     }
 
-    function withdraw(uint256, address, address) public pure override returns (uint256) {
+    function withdraw(
+        uint256,
+        address,
+        address
+    ) public pure override returns (uint256) {
         revert("Can't withdraw");
     }
 
-    function redeem(uint256, address, address) public pure override returns (uint256) {
+    function redeem(
+        uint256,
+        address,
+        address
+    ) public pure override returns (uint256) {
         revert("Can't redeem");
     }
 }
