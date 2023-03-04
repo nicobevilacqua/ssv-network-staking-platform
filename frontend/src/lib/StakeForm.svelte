@@ -59,19 +59,19 @@
 			type: NotificationType.InProgress
 		});
 		try {
-			const rawTransaction = await stakingContract.populateTransaction.stake();
-			const successfull = await simulate({
-				...rawTransaction,
-				value: utils.parseEther(inputAmount.toString()),
-			});
-			if (!successfull) {
-				showNotification("The transaction will be reverted. Please, check the values", {
-					type: NotificationType.Error
-				});
-				return;
-			}
+			// const rawTransaction = await stakingContract.populateTransaction.stake();
+			// const successfull = await simulate({
+			// 	...rawTransaction,
+			// 	value: utils.parseEther(inputAmount.toString()),
+			// });
+			// if (!successfull) {
+			// 	showNotification("The transaction will be reverted. Please, check the values", {
+			// 		type: NotificationType.Error
+			// 	});
+			// 	return;
+			// }
 			const tx = await stakingContract.stake({
-				value: utils.parseEther(inputAmount.toString())
+				value: utils.parseEther(inputAmount.toString()),
 			});
 			const receipt = tx.wait();
 			console.log(receipt);
@@ -84,6 +84,7 @@
 				type: NotificationType.Error
 			});
 		}
+		staking = false;
 	}
 
 	$: if ($signer) {
