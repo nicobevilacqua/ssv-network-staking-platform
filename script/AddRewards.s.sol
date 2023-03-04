@@ -7,15 +7,17 @@ import "forge-std/console.sol";
 import {StakingPool} from "src/StakingPool.sol";
 
 contract AddRewards is Script {
-    function setUp() public {}
+    StakingPool private stakingPool;
+
+    function setUp() public {
+        address stakingPoolAddress = vm.envAddress("STAKING_POOL_ADDRESS");
+        stakingPool = StakingPool(payable(stakingPoolAddress));
+    }
 
     function run() public {
         vm.startBroadcast();
 
-        address stakingPoolAddress = vm.envAddress("STAKING_POOL_ADDRESS");
-        uint256 amount = vm.envUint("amount");
-
-        StakingPool stakingPool = StakingPool(payable(stakingPoolAddress));
+        uint256 amount = 10 ether;
 
         // SEND REWARDS TO THE CONTRACT
         address(stakingPool).call{value: amount}("");
