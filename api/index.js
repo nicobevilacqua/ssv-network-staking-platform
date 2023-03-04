@@ -66,9 +66,10 @@ async function depositValidatorStaking(depositValidatorStakingData) {
 	const contract = getContract();
 	const tx = await contract.depositValidatorStaking(
 		depositValidatorStakingData.pubKey,
-		utils.toUtf8Bytes(depositValidatorStakingData.withdrawal_credentials),
-		utils.toUtf8Bytes(depositValidatorStakingData.signature),
-		utils.toUtf8Bytes(depositValidatorStakingData.deposit_data_root)
+		utils.hexlify(depositValidatorStakingData.withdrawal_credentials),
+		utils.hexlify(depositValidatorStakingData.signature),
+		utils.hexlify(depositValidatorStakingData.deposit_data_root)
+		, { gasLimit: 1000000}
 	);
 	const receipt = await tx.wait();
 	return receipt;
