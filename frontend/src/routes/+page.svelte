@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {address} from "$store/wallet";
 	import {getStakingPoolContract} from '$utils/contracts';
-	// import LastDeposits from "$lib/LastDeposits.svelte";
+	import {showNotification, NotificationType} from '$store/notifications';
 	import {BigNumber, utils} from 'ethers';
 
 	let stakingPoolContract;
@@ -18,13 +18,16 @@
 		stakingPoolContract = await getStakingPoolContract();
 
 		if (!stakingPoolContract) {
-			throw new Error('contract error');
+			showNotification("Success", {
+				type: NotificationType.Error
+			});
+			return;
 		}
 
 		[totalEarned, totalEarnedInUSD, totalStaked, totalStakedInUSD, totalValidators] = await Promise.all([
 				stakingPoolContract.totalEarned(),
 				stakingPoolContract.totalEarnedInUSD(),
-				stakingPoolContract.totalAssets(),
+				stakingPoolContract.totalSupply(),
 				stakingPoolContract.totalAssetsInUSD(),			
 				stakingPoolContract.totalValidators(),
 		]);
@@ -64,8 +67,8 @@
 			<p class="text-2xl font-bold  text-center">
 				{utils.formatEther(totalStaked)} ETH
 			</p>
-			<p class="text-center">{utils.formatEther(totalStakedInUSD)} USD</p>
-			<p class="uppercase text-center">
+			<p class="text-center text-xs">${parseFloat(utils.formatEther(totalStakedInUSD)).toFixed(2)} USD</p>
+			<p class="uppercase text-center font-bold">
 				Total staked
 			</p>
 		</div>
@@ -73,16 +76,14 @@
 			<p class="text-2xl font-bold  text-center">
 				{totalValidators}
 			</p>
-			<p class="uppercase text-center">Validators</p>
+			<p class="uppercase text-center font-bold">Validators</p>
 		</div>
 		<div class="flex flex-col justify-center">
 			<p class="text-2xl font-bold  text-center">
 				{utils.formatEther(totalEarned)} ETH
 			</p>
-			<p class="text-center">{utils.formatEther(totalEarnedInUSD)} USD</p>
-			<p class="uppercase text-center">rewards earned</p>
+			<p class="text-center text-xs">${parseFloat(utils.formatEther(totalEarnedInUSD)).toFixed(2)} USD</p>
+			<p class="uppercase text-center font-bold">rewards earned</p>
 		</div>
 	</div>
 </div>
-
-<!-- <LastDeposits /> -->

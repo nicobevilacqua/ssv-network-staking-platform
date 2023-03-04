@@ -13,6 +13,7 @@ export const STAKING_POOL_ABI = [
 	'function balanceOf(address) view returns (uint)',
 	'function transfer(address to, uint amount)',
 
+	'function totalSupply() view returns(uint256)',
 	'function totalValidators() view returns(uint256)',
 	'function totalEarned() view returns (uint256)',
 	'function totalEarnedInUSD() view returns (uint256)',

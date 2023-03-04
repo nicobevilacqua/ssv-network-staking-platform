@@ -7,7 +7,6 @@
 	import Header from '$lib/Header.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import Notification from '$lib/Notification.svelte';
-	import ThemeSwitcher from "$lib/ThemeSwitcher.svelte";
 
 	import { init } from '$store/wallet';
 
@@ -24,4 +23,6 @@
 </main>
 
 <Footer />
+
+<Notification />
 
