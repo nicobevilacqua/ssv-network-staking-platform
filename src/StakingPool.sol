@@ -78,7 +78,7 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     receive() external payable {
-        if (address(depositContract) == msg.sender) {
+        if (address(asset) != msg.sender) {
             totalEarned += msg.value;
         }
     }
