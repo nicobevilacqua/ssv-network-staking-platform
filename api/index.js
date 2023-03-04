@@ -179,10 +179,6 @@ async function main() {
 			payload
 		});
 
-		// console.log(keyShares.data.publicKey);
-		// console.log(deposit.pubkey);
-		// process.exit();
-
 		const registerValidatorData = {
 			pubKey: keyShares.data.publicKey,
 			operatorIds: keyShares.data.operators.map(({ id }) => id),

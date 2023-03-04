@@ -260,7 +260,7 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function calcRewards(address who) public view returns (uint256) {
-        uint256 percSender = (balanceOf[who] * 1000) / totalAssets();
+        uint256 percSender = (balanceOf[who] * 1000) / totalSupply;
         return (percSender * totalEarned) / 1000;
     }
 

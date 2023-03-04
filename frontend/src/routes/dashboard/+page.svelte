@@ -1,12 +1,14 @@
 <script lang="ts">
-	// import LastDeposits from "$lib/LastDeposits.svelte";
 	import {getStakingPoolContract} from "$utils/contracts";
 	import {signer, address, provider} from "$store/wallet";
-	import {BigNumber, utils} from 'ethers';
+	import {showNotification, NotificationType} from "$store/notifications";
+	import {BigNumber, utils, Contract} from 'ethers';
+	import {simulate} from '$utils/simulator';
+	
 	const {formatEther} = utils;
 
 	let loading = false;
-	let stakingContract; 
+	let stakingContract: Contract | undefined; 
 
 	let symbol: string = '';
 	let totalEarned = BigNumber.from(0);
@@ -24,7 +26,10 @@
 		stakingContract = await getStakingPoolContract();
 
 		if (!stakingContract) {
-			throw new Error("invalid contract");
+			showNotification("Invalid Staking Pool Contract", {
+				type: NotificationType.Error
+			});
+			return;
 		}
 
 		[totalEarned, totalEarnedInUSD, totalStaked, totalStakedInUSD, symbol] = await Promise.all([
@@ -34,6 +39,69 @@
 			stakingContract.stakeOfInUSD($address),
 			stakingContract.symbol(),
 		]);
+	}
+
+	let claming = false;
+	async function claim() {
+		if (!stakingContract) {
+			showNotification("Invalid Staking Pool Contract", {
+				type: NotificationType.Error
+			});
+			return;
+		}
+		claming = true;
+		try {
+			const rawTransaction = await stakingContract.populateTransaction.claim();
+			const successfull = await simulate(rawTransaction);
+			if (!successfull) {
+				showNotification("The transaction will be reverted. Please, check the values", {
+					type: NotificationType.Error
+				});
+				return;
+			}
+			const tx = await stakingContract.claim();
+			const receipt = tx.wait();
+			console.log(receipt);
+			showNotification("Success", {
+				type: NotificationType.Check
+			});
+		} catch (error) {
+			console.error(error);
+			showNotification(error.message, {
+				type: NotificationType.Error
+			});
+		}
+		claming = false;
+	}
+
+	let unstaking = false;
+	async function unstake() {
+		if (!stakingContract) {
+			throw new Error('invalid contract');
+		}
+		unstaking = true;
+		try {
+			const rawTransaction = await stakingContract.populateTransaction.unstake(totalStaked);
+			const successfull = await simulate(rawTransaction);
+			if (!successfull) {
+				showNotification("The transaction will be reverted. Please, check the values", {
+					type: NotificationType.Error
+				});
+				return;
+			}
+			const tx = await stakingContract.unstake(totalStaked);
+			const receipt = tx.wait();
+			console.log(receipt);
+			showNotification("Success", {
+				type: NotificationType.Check
+			});
+		} catch (error) {
+			console.error(error);
+			showNotification(error.message, {
+				type: NotificationType.Error
+			});
+		}
+		unstaking = false;
 	}
 
 	$: if ($signer) {
@@ -54,7 +122,7 @@
 	<div class="flex flex-col my-5">
 		<h1 class="text-5xl">Dashboard</h1>
 	</div>
-	<div class="flex flex-row lg:flex-row-reverse">
+	<div class="flex flex-row">
 		<div class="flex flex-col items-center lg:text-left border-2 py-10 px-5 m-2">
 			<h2 class="text-3xl font-bold text-center">Total Staked</h2>
 			<p class="py-6">
@@ -63,12 +131,14 @@
 			<div class="flex flex-col justify-stretch">
 				{#if totalStaked.gt(0)}
 					<h3 class="font-bold text-2xl text-center">{formatEther(totalStaked)} ETH</h3>
-					<h4 class="text-center">{formatEther(totalStakedInUSD)} USD</h4>
+					<h4 class="text-center">${parseFloat(utils.formatEther(totalStakedInUSD)).toFixed(2)} USD</h4>
 					<button 
 						class="btn btn-primary btn-wide mt-5"
 						class:disabled={totalStaked.eq(0)}
-						disabled={totalStaked.eq(0)}
-					>Unstake</button>
+						class:loading={unstaking}
+						disabled={totalStaked.eq(0) || unstaking}
+						on:click={unstake}
+					>{unstaking ? 'Unstaking' : 'Unstake'}</button>
 				{:else}
 					<p class="font-bold">You have not staked anything yet.</p>
 				{/if}
@@ -82,17 +152,18 @@
 			<div class="flex flex-col justify-stretch">
 				{#if totalEarned.gt(0)}
 					<h3 class="font-bold text-2xl text-center">{formatEther(totalEarned)} ETH</h3>
-					<h4 class="text-center">{formatEther(totalEarnedInUSD)} USD</h4>
+					<h4 class="text-center">${parseFloat(utils.formatEther(totalEarnedInUSD)).toFixed(2)} USD</h4>
 					<button 
 						class="btn btn-primary btn-wide mt-5" 
 						class:disabled={totalEarned.eq(0)}
-						disabled={totalEarned.eq(0)}
-					>Claim</button>
+						class:loading={claming}
+						disabled={totalEarned.eq(0) || claming}
+						on:click={claim}
+					>{claming ? 'Claming' : 'Claim'}</button>
 				{:else}
 					<p class="font-bold">You have not earned anything yet.</p>
 				{/if}
 			</div>
 		</div>
 	</div>
-	<!-- <LastDeposits /> -->
 </div>
