@@ -55,16 +55,24 @@
 			return;
 		}
 		staking = true;
+		showNotification("Sending transaction", {
+			type: NotificationType.InProgress
+		});
 		try {
-			const rawTransaction = await stakingContract.populateTransaction.claim();
-			const successfull = await simulate(rawTransaction);
+			const rawTransaction = await stakingContract.populateTransaction.stake();
+			const successfull = await simulate({
+				...rawTransaction,
+				value: utils.parseEther(inputAmount.toString()),
+			});
 			if (!successfull) {
 				showNotification("The transaction will be reverted. Please, check the values", {
 					type: NotificationType.Error
 				});
 				return;
 			}
-			const tx = await stakingContract.claim();
+			const tx = await stakingContract.stake({
+				value: utils.parseEther(inputAmount.toString())
+			});
 			const receipt = tx.wait();
 			console.log(receipt);
 			showNotification("Success", {
@@ -134,9 +142,7 @@
 							class="btn btn-sm text-xs hover:border-gray-600 border-transparent border rounded px-1 mx-4 py-0 h-6"
 							on:click|preventDefault={loaded ? setMaxEther : undefined}>MAX</button
 						>
-						<!-- <div class="flex flex-row items-center"> -->
 						<div class="text-xl font-semibold w-14">ETH</div>
-						<!-- </div> -->
 					</div>
 				</div>
 				<div class="text-left" />
@@ -214,9 +220,6 @@
 							<div class="animate-pulse w-14 bg-slate-200 h-4" />
 						{/if}
 					</div>
-					{#if staking}
-						<progress class="progress progress-primary" value="progress" max="100" />
-					{/if}
 				</div>
 			</div>
 		</div>

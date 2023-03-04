@@ -5,7 +5,7 @@ export const ERC20_ABI = [
 ];
 
 export const STAKING_POOL_ABI = [
-	'function stake()',
+	'function stake() payable',
 	'function claim()',
 	'function unstake(uint256)',
 
