@@ -170,12 +170,12 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function registerValidator(
-        bytes calldata pubKey,
-        uint32[] calldata operatorIds,
-        bytes[] calldata sharesPublicKeys,
-        bytes[] calldata sharesEncrypted,
+        bytes memory pubKey,
+        uint32[] memory operatorIds,
+        bytes[] memory sharesPublicKeys,
+        bytes[] memory sharesEncrypted,
         uint256 amount
-    ) external onlyOwner {
+    ) public onlyOwner {
         bytes32 pubKeyHash = keccak256(pubKey);
 
         if (validators[pubKeyHash].active == IsActive.TRUE) {
@@ -225,11 +225,11 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function depositValidatorStaking(
-        bytes calldata pubKey,
-        bytes calldata withdrawal_credentials,
-        bytes calldata signature,
+        bytes memory pubKey,
+        bytes memory withdrawal_credentials,
+        bytes memory signature,
         bytes32 deposit_data_root
-    ) external onlyOwner {
+    ) public onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
 
         // Deposit the validator to the deposit contract
@@ -258,11 +258,7 @@ contract StakingPool is Owned, ERC4626 {
         return (totalEarned * price) / priceDecimals;
     }
 
-    function getLatestPrice()
-        public
-        view
-        returns (uint256 price, uint8 priceDecimals)
-    {
+    function getLatestPrice() public view returns (uint256 price, uint8 priceDecimals) {
         (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
         require(inputPrice > 0, "Bad price");
 
@@ -276,21 +272,19 @@ contract StakingPool is Owned, ERC4626 {
         return (percSender * totalEarned) / 1000;
     }
 
-    function calcRewardsInUSD(address who)
-        external
-        view
-        returns (uint256 amount)
-    {
+    function calcRewardsInUSD(address who) external view returns (uint256 amount) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (calcRewards(who) * price) / priceDecimals;
     }
 
     function totalStakeInUSD(address who) external view returns(uint256 amount) {
-        return asset.balanceOf(address(this)) * getLatestPrice();
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (asset.balanceOf(address(this)) * price) / priceDecimals;
     }
 
     function totalEarnedInUSD(address who) external view returns(uint256 amount) {
-        return totalEarned * getLatestPrice();
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (totalEarned * price) / priceDecimals;
     }
 
     // Removed functions
