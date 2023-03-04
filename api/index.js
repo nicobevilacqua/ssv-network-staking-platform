@@ -1,4 +1,69 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
+const axios = require("axios");
 const { SSVKeys } = require("ssv-keys");
+const { Contract, ethers, Wallet, utils } = require("ethers");
+
+const { STAKING_POOL_ADDRESS, PRIVATE_KEY, RPC_URL } = process.env;
+
+export const STAKING_POOL_ABI = [
+  "function registerValidator(bytes,uint32[],bytes[],bytes[],uint256 ) external",
+  "function depositValidatorStaking(bytes,bytes,bytes,bytes32) external",
+  "function registerValidatorAndDeposit(bytes,uint32[],bytes[],bytes[],uint256,bytes,bytes,bytes32)",
+];
+
+function getContract() {
+  const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+  const signer = new Wallet(PRIVATE_KEY, provider);
+  const contractInstance = new Contract(
+    STAKING_POOL_ADDRESS,
+    STAKING_POOL_ABI,
+    signer
+  );
+  return contractInstance;
+}
+
+async function registerValidatorAndDeposit(registerValidatorAndDepositData) {
+  const contract = getContract();
+  const tx = await contract.registerValidatorAndDeposit(
+    registerValidatorAndDepositData.pubKey,
+    registerValidatorAndDepositData.operatorIds,
+    registerValidatorAndDepositData.sharePublicKeys,
+    registerValidatorAndDepositData.shareEncrypted,
+    utils.parseEther(10),
+    registerValidatorAndDepositData.withdrawal_credentials,
+    registerValidatorAndDepositData.signature,
+    registerValidatorAndDepositData.deposit_data_root
+  );
+  const receipt = await tx.wait();
+  return receipt;
+}
+
+async function registerValidator(registerValidatorData) {
+  const contract = getContract();
+  const tx = await contract.registerValidator(
+    registerValidatorData.pubKey,
+    registerValidatorData.operatorIds,
+    registerValidatorData.sharePublicKeys,
+    registerValidatorData.shareEncrypted,
+    utils.parseEther(10)
+  );
+  const receipt = await tx.wait();
+  return receipt;
+}
+
+async function depositValidatorStaking(depositValidatorStakingData) {
+  const contract = getContract();
+  const tx = await contract.depositValidatorStaking(
+    registerValidatorData.pubKey,
+    registerValidatorData.withdrawal_credentials,
+    registerValidatorData.signature,
+    registerValidatorData.deposit_data_root
+  );
+  const receipt = await tx.wait();
+  return receipt;
+}
 
 const keystores = [
   require("../config/keystores/keystore1.json"),
@@ -15,8 +80,6 @@ const deposits = [
   require("../config/deposits/deposit4.json"),
   require("../config/deposits/deposit5.json"),
 ];
-
-const axios = require("axios");
 
 async function getOperators() {
   const { data } = await axios.get(
@@ -113,14 +176,18 @@ async function main() {
     sharesEncrypted: keyShares.data.shares.encryptedKeys,
   };
 
-  console.log(depositValidatorStakingData, registerValidatorData);
+  let receipt = await registerValidator(registerValidatorData);
+  console.log(receipt);
+  receipt = await depositValidatorStakingData();
 
-  return {
-    validatorPublicKey: publicKey,
-    operators: o,
-    sharePublicKeys: publicKeys,
-    shareEncrypted: encryptedKeys,
-  };
+  // console.log(depositValidatorStakingData, registerValidatorData);
+
+  // return {
+  //   validatorPublicKey: publicKey,
+  //   operators: o,
+  //   sharePublicKeys: publicKeys,
+  //   shareEncrypted: encryptedKeys,
+  // };
 }
 
 main().then((data) => console.log(JSON.stringify(data, null, 2)));

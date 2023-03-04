@@ -10,7 +10,7 @@
 		console.log('loading');
 		stakingContract = await getStakingPoolContract();
 
-		console.log(await stakingContract.totalValidators());
+		// console.log(await stakingContract.totalValidators());
 	}
 
 	$: if($address) {

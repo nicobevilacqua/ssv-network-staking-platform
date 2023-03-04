@@ -11,7 +11,6 @@ A decentralized, permissionless staking service that allows anyone to stake any 
 * Use fRPC to connect your dApp to Blockchain
 * Connect the world with Chainlink
 * Chainlink Functions
-* Build with Web3Auth
 
 ## How to run the tests
 There're diffent ways to run tests

@@ -129,13 +129,39 @@ contract StakingPool is Owned, ERC4626 {
     // todo
     function claim() external {}
 
-    function registerValidator(
-        bytes calldata pubKey,
-        uint32[] calldata operatorIds,
-        bytes[] calldata sharesPublicKeys,
-        bytes[] calldata sharesEncrypted,
-        uint256 amount
+    function registerValidatorAndDeposit(
+        bytes memory pubKey,
+        uint32[] memory operatorIds,
+        bytes[] memory sharesPublicKeys,
+        bytes[] memory sharesEncrypted,
+        uint256 amount,
+        bytes memory withdrawal_credentials,
+        bytes memory signature,
+        bytes32 deposit_data_root
     ) external onlyOwner {
+        registerValidator(
+            pubKey,
+            operatorIds,
+            sharesPublicKeys,
+            sharesEncrypted,
+            amount
+        );
+
+        depositValidatorStaking(
+            pubKey,
+            withdrawal_credentials,
+            signature,
+            deposit_data_root
+        );
+    }
+
+    function registerValidator(
+        bytes memory pubKey,
+        uint32[] memory operatorIds,
+        bytes[] memory sharesPublicKeys,
+        bytes[] memory sharesEncrypted,
+        uint256 amount
+    ) public onlyOwner {
         bytes32 pubKeyHash = keccak256(pubKey);
 
         if (validators[pubKeyHash].active == IsActive.TRUE) {
@@ -185,11 +211,11 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     function depositValidatorStaking(
-        bytes calldata pubKey,
-        bytes calldata withdrawal_credentials,
-        bytes calldata signature,
+        bytes memory pubKey,
+        bytes memory withdrawal_credentials,
+        bytes memory signature,
         bytes32 deposit_data_root
-    ) external onlyOwner {
+    ) public onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
 
         // Deposit the validator to the deposit contract
