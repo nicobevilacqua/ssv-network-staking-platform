@@ -11,7 +11,7 @@ contract StakingDataMock {
     bytes constant signature =
         hex"b7d6e13498d43bd9b1c4d6f759fcf1c1397a6626dca0c03a97cbe8345e45807f31292255dcfd5df7d1e333deba562bd408bbbb38a44bc201e9e12ce53c769153dffbb1cd7d59a4a40bea454dc49617f85c5f49f83a8bc3bbaae6d04a57b2aeb9";
 
-    bytes32 deposit_data_root =
+    bytes constant deposit_data_root =
         hex"5e24800ee2656cc49c507844e5e6706c0cfca4c2312b4d13458851cf09f63b87";
 
     uint32[] operatorIds;

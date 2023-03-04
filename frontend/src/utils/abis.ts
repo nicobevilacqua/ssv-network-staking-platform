@@ -13,5 +13,8 @@ export const STAKING_POOL_ABI = [
 	'function stake()',
 	'function claim()',
 	'function unstake(uint256)',
-	'function getLatestPrice() view returns (int256)'
+	'function getLatestPrice() view returns (int256)',
+	'function calcRewards(address) view returns (uint256)',
+	'function calcRewardsInUSD(address) view returns (uint256)',
+	'function getLatestPrice() view returns (uint256)'
 ];

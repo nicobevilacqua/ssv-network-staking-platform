@@ -9,6 +9,7 @@
 	let stakingContract; 
 	let symbol: string = '';
 	let totalEarned = BigNumber.from(0);
+	let totalEarnedInUSD = BigNumber.from(0);
 	let totalStaked = BigNumber.from(0);
 
 	async function load() {
@@ -24,9 +25,10 @@
 			throw new Error("invalid contract");
 		}
 
-		[totalEarned, totalStaked, symbol] = await Promise.all([
-			stakingContract.totalEarnedBy($address),
-			stakingContract.totalStakedBy($address),
+		[totalEarned, totalEarnedInUSD, totalStaked, symbol] = await Promise.all([
+			stakingContract.calcRewards($address),
+			stakingContract.calcRewardsInUSD($address),
+			stakingContract.balanceOf($address),
 			stakingContract.symbol(),
 		]);
 	}
@@ -71,6 +73,7 @@
 			</p>
 			<div class="flex flex-col justify-stretch">
 				<h3 class="font-bold text-2xl text-center">{formatEther(totalEarned)} ETH</h3>
+				<h4 class="text-center">{formatEther(totalEarnedInUSD)} USD</h4>
 				<button 
 					class="btn btn-primary btn-wide mt-5" 
 					class:disabled={totalEarned.eq(0)}

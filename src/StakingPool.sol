@@ -78,7 +78,8 @@ contract StakingPool is Owned, ERC4626 {
     }
 
     receive() external payable {
-        if (address(depositContract) == msg.sender) {
+        // only if is not weth
+        if (address(asset) != msg.sender) {
             totalEarned += msg.value;
         }
     }
@@ -149,7 +150,7 @@ contract StakingPool is Owned, ERC4626 {
         uint256 amount,
         bytes memory withdrawal_credentials,
         bytes memory signature,
-        bytes32 deposit_data_root
+        bytes memory deposit_data_root
     ) external onlyOwner {
         registerValidator(
             pubKey,
@@ -226,7 +227,7 @@ contract StakingPool is Owned, ERC4626 {
         bytes memory pubKey,
         bytes memory withdrawal_credentials,
         bytes memory signature,
-        bytes32 deposit_data_root
+        bytes memory deposit_data_root
     ) public onlyOwner {
         WETH(payable(address(asset))).withdraw(VALIDATOR_STAKE_AMOUNT);
 
@@ -235,7 +236,7 @@ contract StakingPool is Owned, ERC4626 {
             pubKey,
             withdrawal_credentials,
             signature,
-            deposit_data_root
+            bytes32(deposit_data_root)
         );
 
         // Emit an event to log the deposit of the public key
@@ -246,6 +247,10 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
+    function totalStakedInUSD(address who) public view returns (uint256) {
+        return asset.balanceOf(who) * getLatestPrice();
+    }
+
     function getLatestPrice() public view returns (uint256) {
         (, int256 price, , , ) = priceFeed.latestRoundData();
         require(price > 0, "Bad price");
@@ -253,13 +258,16 @@ contract StakingPool is Owned, ERC4626 {
         return uint256(price);
     }
 
-    function calcRewards(address who) public view returns(uint256 amount) {
-        uint256 percSender = balanceOf[msg.sender] * 1000 / totalAssets();
-        return percSender * totalEarned / 1000;
+    function calcRewards(address who) public view returns (uint256 amount) {
+        uint256 percSender = (balanceOf[who] * 1000) / totalAssets();
+        return (percSender * totalEarned) / 1000;
     }
 
-    function calcRewardsInUSD(address who) external view returns(uint256 amount) {
+    function calcRewardsInUSD(address who)
+        external
+        view
+        returns (uint256 amount)
+    {
         return calcRewards(who) * getLatestPrice();
     }
-
 }
