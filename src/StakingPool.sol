@@ -270,7 +270,13 @@ contract StakingPool is Owned, ERC4626 {
         uint256 percSender = (balanceOf[who] * 1000) / totalSupply;
 
         amount = (percSender * totalEarned) / 1000;
-        amount -= userClaims[msg.sender];
+        uint256 userClaim = userClaims[msg.sender];
+
+        if (amount > userClaim) {
+            amount -= userClaim;
+        } else {
+            return 0;
+        }
     }
 
     function calcRewardsInUSD(address who)
