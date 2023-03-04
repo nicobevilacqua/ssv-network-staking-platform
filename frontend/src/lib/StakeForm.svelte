@@ -1,40 +1,62 @@
 <script type="ts">
   import {getStakingPoolContract} from "$utils/contracts";
-	import {signer, address, onExpectedNetwork} from "$store/wallet";
-	import {utils} from 'ethers';
+	import {signer, address, onExpectedNetwork, provider} from "$store/wallet";
+	import {BigNumber, utils} from 'ethers';
 
 	import ConnectButton from "./ConnectButton.svelte";
 	import SwitchNetworkButton from "./SwitchNetworkButton.svelte";
 
 	const {formatEther} = utils;
 
+	
+
 	let loaded = false;
 	let invalid = false;
-	let balance = 0;
-	let ethmountVal = 0;
-	let useMaxETHER = 0;
-	let userBalance = 0;
-	let outputStake = 0;
-	let vaultBalance = 0;
-	let currentVault = 0;
-	let progress = 0;
-	let minting = false;
 
 	let stakingContract;
-
-	function login() {}
-
-	function changeNetwork() {}
-
-	function mint() {}
+	let symbol: string = '';
+	let balance = BigNumber.from(0);
+	let assetsBalance = BigNumber.from(0);
 
 	$: if ($signer) {
 		load();
 	}
 
+	$: if ($address) {
+		load();
+	}
+
+	let inputAmount = 0;
+
+
+	function setMaxEther() {
+		inputAmount = Number(formatEther(balance));
+	}
+
   async function load() {
-		console.log("loading");
+		if (!$provider || !$address) {
+			return;
+		}
+
 		stakingContract = await getStakingPoolContract();
+
+		if (!stakingContract) {
+			throw new Error("invalid contract");
+		}
+
+		[balance, symbol, assetsBalance] = await Promise.all([
+			$provider.getBalance($address),
+			stakingContract.symbol(),
+			stakingContract.balanceOf($address),
+		]);
+		
+		loaded = true;
+	}
+
+	let staking = false;
+	async function stake() {
+		staking = true;
+		console.log(inputAmount);
 	}
 
 </script>
@@ -47,7 +69,7 @@
 			Stake
 		</h5>
 
-		<p class="mb-3 font-normal text-gray-900 dark:text-gray-400">
+		<p class="mb-3 font-normal">
 			Stake your ETH to win rewards and to participate in Ethereum PoS
 		</p>
 
@@ -55,35 +77,35 @@
 
 		<div class="flex justify-center flex-col mx-auto w-full text-center max-w-lg mt-5">
 			<div class="rounded-3xl bg-white shadow-sm w-full  mx-auto flex flex-col px-5 py-4 z-10">
-				<h1 class="uppercase text-black text-3xl my-2">Mint</h1>
+				<h1 class="uppercase text-black text-3xl my-2 font-mono">Stake</h1>
 				<div class="border rounded-lg p-2 flex flex-col">
-					<div class="flex flex-row text-xs text-gray-700 justify-between items-center">
+					<div class="flex flex-row text-xs text-gray-700 justify-between items-center m-1">
 						{#if loaded}
-							<div>ETH a stakear</div>
-							<div>Balance: {formatEther(balance || '0')}</div>
+							<div>ETH to stake</div>
+							<div>Balance: {Number(formatEther(balance)).toFixed(6)}</div>
 						{:else}
 							<div class="animate-pulse w-16 bg-slate-200 h-4" />
 							<div class="animate-pulse w-20 bg-slate-200 h-4" />
 						{/if}
 					</div>
-					<div class="flex flex-row text-gray-700 justify-between pt-1 items-center">
-						<!-- {#if loaded} -->
+					<div class="flex flex-row  justify-between pt-1 items-center">
+						{#if loaded}
 						<input
 							type="number"
 							placeholder="0"
 							min="0"
 							max={formatEther(balance || '0')}
 							disabled={!loaded}
-							bind:value={ethmountVal}
+							bind:value={inputAmount}
 							step="0.01"
-							class="text-4xl outline-none w-72 font-mono"
+							class="input text-4xl outline-none w-72 font-mono"
 						/>
-						<!-- {:else}
+						{:else}
               <div class="h-10 w-full bg-slate-200 animate-pulse"></div>
-            {/if} -->
+            {/if}
 						<button
-							class="text-xs hover:border-gray-600 border-transparent border rounded px-1 mx-4 py-0 h-6 bg-slate-200"
-							on:click|preventDefault={loaded ? useMaxETHER : undefined}>MAX</button
+							class="btn btn-sm text-xs hover:border-gray-600 border-transparent border rounded px-1 mx-4 py-0 h-6"
+							on:click|preventDefault={loaded ? setMaxEther : undefined}>MAX</button
 						>
 						<!-- <div class="flex flex-row items-center"> -->
 						<div class="text-xl font-semibold w-14">ETH</div>
@@ -100,25 +122,25 @@
 					>
 				</span>
 				<div class="border rounded-lg p-2 flex flex-col">
-					<div class="flex flex-row text-xs text-gray-700 justify-between">
+					<div class="flex flex-row text-xs text-gray-700 justify-between m-1">
 						<div>Output</div>
 						{#if loaded}
-							<div>Balance: {Number(formatEther(userBalance || '0')).toFixed(6)}</div>
+							<div>Balance: {Number(formatEther(assetsBalance)).toFixed(6)}</div>
 						{:else}
-							<div class="animate-pulse w-20 bg-slate-200 h-4" />
+							<div class="animate-pulse w-20 bg-base-200 h-4" />
 						{/if}
 					</div>
-					<div class="flex flex-row text-gray-700 justify-between pt-1">
+					<div class="flex flex-row  justify-between pt-1">
 						<input
 							type="number"
 							placeholder="0"
 							min="0"
-							value={Number(formatEther(outputStake || '0')).toFixed(8)}
+							bind:value={inputAmount}
 							readonly
-							class="text-4xl w-72 outline-none font-mono text-green-700"
+							class="input text-4xl w-72 outline-none font-mono"
 						/>
 						<div class="flex flex-row">
-							<div class="text-xl font-semibold w-14">vETH</div>
+							<div class="text-xl font-semibold w-14">{symbol}</div>
 						</div>
 					</div>
 				</div>
@@ -130,24 +152,18 @@
 					{:else}
 						<button
 							class="btn btn-primary btn-lg w-full rounded-xl py-4 font-semibold mt-4"
-							on:click|preventDefault={mint}
-							disabled={invalid}
-							class:cursor-wait={minting}>Mint</button
+							class:loading={staking}
+							on:click|preventDefault={stake}
+							disabled={invalid || staking || (!inputAmount || inputAmount === 0)}
+							class:cursor-wait={staking}
 						>
+							{staking ? 'staking' : 'stake'}
+						</button>
 					{/if}
 				</div>
 			</div>
 			<div class="-mt-8 pt-10 shadow-lg max-w-lg w-[96%] rounded mx-auto">
 				<div class="flex flex-col px-5 font-mono text-sm py-1">
-					<div class="flex justify-between pb-0.5">
-						<div class="">Current Vault</div>
-						{#if loaded}
-							<div class=""># {currentVault}</div>
-						{:else}
-							<div class="animate-pulse w-14 bg-slate-200 h-4" />
-						{/if}
-					</div>
-
 					<div class="flex justify-between pb-0.5">
 						<div class="">Target Stake</div>
 						<div class="">32 ETH</div>
@@ -164,30 +180,15 @@
 						<div class="">Current stake</div>
 						{#if loaded}
 							<div class="">
-								{Number(formatEther(vaultBalance || '0')).toFixed(2)}<span class="pl-[3px]"
-									>ETH</span
-								>
+								{Number(formatEther(assetsBalance)).toFixed(2)}<span class="pl-[3px]">ETH</span>
 							</div>
 						{:else}
 							<div class="animate-pulse w-14 bg-slate-200 h-4" />
 						{/if}
 					</div>
-					<div class="flex justify-between py-0.5">
-						<div class="w-full h-6 bg-gray-200 rounded-full dark:bg-gray-700">
-							{#if loaded}
-								<div
-									class="bg-slate-500 h-6 text-base font-medium text-white text-center p-1 leading-none rounded-full"
-									style="width: {progress}%"
-								>
-									{#if progress > 10}
-										{progress}%
-									{/if}
-								</div>
-							{:else}
-								<!-- <div class="animate-pulse w-14 bg-slate-200 h-4"></div>-->
-							{/if}
-						</div>
-					</div>
+					{#if staking}
+						<progress class="progress progress-primary" value="progress" max="100" />
+					{/if}
 				</div>
 			</div>
 		</div>

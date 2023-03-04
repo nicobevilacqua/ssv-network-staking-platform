@@ -68,7 +68,6 @@ export async function init() {
 	address.set(newAddress);
 
 	newProvider.on('chainChanged', () => {
-		debugger;
 		init();
 	});
 

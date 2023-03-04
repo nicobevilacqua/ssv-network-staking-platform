@@ -32,6 +32,10 @@ contract CounterScript is Script {
 
         console.log("StakingPool", address(stakingPool));
 
+        // transfer ssv tokens to staking pool
+        ERC20 SSVToken = ERC20(SSVTokenAddress);
+        SSVToken.transfer(address(stakingPool), SSVToken.balanceOf(msg.sender));
+
         vm.stopBroadcast();
     }
 }

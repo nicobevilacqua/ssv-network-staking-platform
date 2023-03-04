@@ -12,13 +12,15 @@ contract AddRewards is Script {
     function setUp() public {}
 
     function run() public {
-        address stakingPoolAddress = vm.envAddress("STAKING_POOL_ADDRESS");
+        address stakingPoolAddress = vm.envAddress("SCA");
+
+        uint256 amount = vm.envUint("AMOUNT");
+
         stakingPool = StakingPool(payable(stakingPoolAddress));
+
         vm.startBroadcast();
 
-        uint256 amount = 10 ether;
-
-        address(stakingPool).call{value: amount}("");
+        address(stakingPool).call{value: amount * 1 ether}("");
 
         vm.stopBroadcast();
     }

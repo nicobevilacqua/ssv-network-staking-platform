@@ -11,7 +11,6 @@ A decentralized, permissionless staking service that allows anyone to stake any 
 * Use fRPC to connect your dApp to Blockchain
 * Connect the world with Chainlink
 * Chainlink Functions
-* Build with Web3Auth
 
 ## How to run the tests
 There're diffent ways to run tests
@@ -20,13 +19,13 @@ There're diffent ways to run tests
 source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
 ```
 
-### Local deploy using ganache
+### Local deployment using ganache
 1 - Run ganache in one terminal
 ```sh
   source .env.local && ganache -f $INFURA_RPC_URL
 ```
 
-2 - Deploy the contracts on ganache
+2 - Deploy the contracts
 ```sh
   source .env.local && forge script ./script/Deploy.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
 ```
@@ -34,6 +33,17 @@ source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
 3 - Run the frontend
 ```sh
   cd frontend && yarn dev-frontend-local
+```
+
+### Local deployment using anvil
+1 - Run anvil
+```sh
+  source .env.local && anvil --fork-url $INFURA_RPC_URL
+```
+
+2 - Deploy the contracts
+```sh
+  source .env.local && forge script ./script/Deploy.s.sol --rpc-url $RPC_URL --private-key $DEPLOYMENT_PRIVATE_KEY -vvv --broadcast
 ```
 
 ### Deploy on a testnet
@@ -187,5 +197,8 @@ https://github.com/fluencelabs/ethdenver-2023/blob/main/README.md
 
 
 
+## add rewards on anvil
+source .env.local && AMOUNT=30 SCA=0x0a08a41b691ec9954cc3170f9fb9ae819686ba00 forge script ./script/AddRewards.s.sol --rpc-url $ANVIL_RPC_URL --broadcast --private-key $ANVIL_PRIVATE_KEY -vvvv
 
-source .env.local && forge script ./script/AddRewards.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+## add rewards on ganache
+source .env.local && AMOUNT=30 SCA=0x0a08a41b691ec9954cc3170f9fb9ae819686ba00 forge script ./script/AddRewards.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY -vvvv

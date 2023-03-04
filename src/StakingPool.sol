@@ -115,6 +115,8 @@ contract StakingPool is Owned, ERC4626 {
             }
         }
 
+        totalValidatorStakes += _amount;
+
         _mint(msg.sender, _amount);
 
         emit Staked(msg.sender, _amount, block.timestamp);
@@ -139,6 +141,32 @@ contract StakingPool is Owned, ERC4626 {
         payable(msg.sender).transfer(amount);
 
         emit Claimed(msg.sender, amount, block.timestamp);
+    }
+
+    function registerValidatorAndDeposit(
+        bytes memory pubKey,
+        uint32[] memory operatorIds,
+        bytes[] memory sharesPublicKeys,
+        bytes[] memory sharesEncrypted,
+        uint256 amount,
+        bytes memory withdrawal_credentials,
+        bytes memory signature,
+        bytes32 deposit_data_root
+    ) external onlyOwner {
+        registerValidator(
+            pubKey,
+            operatorIds,
+            sharesPublicKeys,
+            sharesEncrypted,
+            amount
+        );
+
+        depositValidatorStaking(
+            pubKey,
+            withdrawal_credentials,
+            signature,
+            deposit_data_root
+        );
     }
 
     function registerValidator(
@@ -220,20 +248,41 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
-    function getLatestPrice() public view returns (uint256) {
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        require(price > 0, "Bad price");
-
-        return uint256(price);
+    function totalStakedIn(address who) public view returns (uint256) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (asset.balanceOf(who) * price) / priceDecimals;
     }
 
-    function calcRewards(address who) public view returns(uint256 amount) {
-        uint256 percSender = balanceOf[msg.sender] * 1000 / totalAssets();
-        return percSender * totalEarned / 1000;
+    function totalEarnedInUSD() public view returns (uint256) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (totalEarned * price) / priceDecimals;
     }
 
-    function calcRewardsInUSD(address who) external view returns(uint256 amount) {
-        return calcRewards(who) * getLatestPrice();
+    function getLatestPrice()
+        public
+        view
+        returns (uint256 price, uint8 priceDecimals)
+    {
+        (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
+        require(inputPrice > 0, "Bad price");
+
+        price = uint256(inputPrice);
+
+        priceDecimals = priceFeed.decimals();
+    }
+
+    function calcRewards(address who) public view returns (uint256) {
+        uint256 percSender = (balanceOf[who] * 1000) / totalAssets();
+        return (percSender * totalEarned) / 1000;
+    }
+
+    function calcRewardsInUSD(address who)
+        external
+        view
+        returns (uint256 amount)
+    {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (calcRewards(who) * price) / priceDecimals;
     }
 
     function totalStakeInUSD(address who) external view returns(uint256 amount) {
