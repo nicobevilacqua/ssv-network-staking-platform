@@ -53,17 +53,7 @@
 
 		<hr />
 
-		<div class="flex justify-center flex-col mx-auto w-full text-center max-w-lg">
-			<div class="border rounded-lg flex flex-row mx-auto my-5">
-				<a
-					class="p-2 m-1 rounded-lg w-28 uppercase text-sm font-semibold  no-underline hover:no-underline bg-slate-300"
-					href="./">Mint</a
-				>
-				<a
-					class="p-2 m-1 rounded-lg w-28 uppercase text-sm font-semibold  no-underline hover:no-underline hover:bg-slate-100"
-					href="./redeem">Redeem</a
-				>
-			</div>
+		<div class="flex justify-center flex-col mx-auto w-full text-center max-w-lg mt-5">
 			<div class="rounded-3xl bg-white shadow-sm w-full  mx-auto flex flex-col px-5 py-4 z-10">
 				<h1 class="uppercase text-black text-3xl my-2">Mint</h1>
 				<div class="border rounded-lg p-2 flex flex-col">
@@ -132,11 +122,11 @@
 						</div>
 					</div>
 				</div>
-				<div>
+				<div class="py-5">
 					{#if !$onExpectedNetwork}
-						<SwitchNetworkButton />
+						<SwitchNetworkButton class="btn-big w-full" />
 					{:else if !$address} 
-						<ConnectButton />
+						<ConnectButton class="btn-big w-full" />
 					{:else}
 						<button
 							class="btn btn-primary btn-lg w-full rounded-xl py-4 font-semibold mt-4"

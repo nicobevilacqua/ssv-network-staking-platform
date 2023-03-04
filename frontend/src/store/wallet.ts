@@ -68,6 +68,7 @@ export async function init() {
 	address.set(newAddress);
 
 	newProvider.on('chainChanged', () => {
+		debugger;
 		init();
 	});
 
@@ -109,6 +110,8 @@ export async function switchNetwork(chainId: number = expectedChainId) {
 	if (!ethereum) {
 		throw new Error('asdas');
 	}
+
+	console.log(`0x${chainId.toString(16)}`);
 
 	try {
 		await ethereum.request({

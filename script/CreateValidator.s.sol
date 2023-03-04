@@ -7,7 +7,8 @@ import "forge-std/console.sol";
 import "src/StakingPool.sol";
 
 contract CounterScript is Script {
-    function setUp() public {}
+    function setUp() public {
+    }
 
     function run() public {
         vm.startBroadcast();

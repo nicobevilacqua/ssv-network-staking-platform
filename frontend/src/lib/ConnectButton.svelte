@@ -1,4 +1,8 @@
 <script type="ts">
+	
+
+	let sizeClass = "btn-${size}"
+
 	import { address, connect, onExpectedNetwork } from '$store/wallet';
 	import {showNotification, NotificationType } from '$store/notifications';
 
@@ -24,11 +28,11 @@
 	<button
 		on:click={onConnect}
 		disabled={loading || !$onExpectedNetwork}
-		class="
+		class={`
 			btn
 			btn-primary
-			btn-sm
-		"
+			${$$restProps.class || ''}
+		`}
 		class:cursor-pointer={!$address}
 	>
 		{#if loading}

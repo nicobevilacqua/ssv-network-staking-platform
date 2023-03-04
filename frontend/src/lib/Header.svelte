@@ -17,10 +17,10 @@
 		</div>
 		<div class="navbar-center">
 			<ul class="menu menu-horizontal px-1">
-      	<li><a href="/">Home</a></li>
-				<li><a href="/dashboard">Dashboard</a></li>
-				<li><a href="/claim">Claim</a></li>
-				<li><a href="/stake">Stake</a></li>
+      	<li><a class="px-1 md:px-10" href="/">Home</a></li>
+				<li><a class="px-1 md:px-10" href="/dashboard">Dashboard</a></li>
+				<!-- <li><a href="/claim">Claim</a></li> -->
+				<li><a class="px-1 md:px-10" href="/stake">Stake</a></li>
 			</ul>
 		</div>
 		<div class="navbar-end">

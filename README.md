@@ -23,17 +23,17 @@ source .env.local && forge test --fork-url $INFURA_RPC_URL -vvv
 ### Local deploy using ganache
 1 - Run ganache in one terminal
 ```sh
-  ganache
+  source .env.local && ganache -f $INFURA_RPC_URL
 ```
 
 2 - Deploy the contracts on ganache
 ```sh
-source .env.local && forge script ./script/Deploy.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
+  source .env.local && forge script ./script/Deploy.s.sol --rpc-url $GANACHE_RPC_URL --broadcast --private-key $GANACHE_PRIVATE_KEY
 ```
 
 3 - Run the frontend
 ```sh
-  yarn dev-frontend-local
+  cd frontend && yarn dev-frontend-local
 ```
 
 ### Deploy on a testnet

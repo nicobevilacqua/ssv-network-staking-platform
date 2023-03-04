@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"scripts": {
 		"dev": "vite dev",
-		"local": "vite dev --mode custom",
+		"dev-remote": "vite dev --mode remote",
 		"build": "vite build",
 		"preview": "vite preview",
 		"test": "playwright test",

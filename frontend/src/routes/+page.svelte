@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {address} from "$store/wallet";
 	import {getStakingPoolContract} from '$utils/contracts';
+	import LastDeposits from "$lib/LastDeposits.svelte";
 	import {utils} from 'ethers';
 
 	let stakingPoolContract;
@@ -52,11 +53,11 @@
 	</div>
 </div>
 
-<div class="w-full p-10">
+<div class="w-full p-10 bg-slate-100">
 	<div class="flex flex-row justify-around w-full my-5">
 		<div class="flex flex-col justify-center">
 			<p class="text-2xl font-bold  text-center">
-				{utils.formatEther(totalValidatorStakes)}
+				{utils.formatEther(totalValidatorStakes)} ETH
 			</p>
 			<p class="uppercase text-center">
 				Total staked
@@ -70,9 +71,11 @@
 		</div>
 		<div class="flex flex-col justify-center">
 			<p class="text-2xl font-bold  text-center">
-				{utils.formatEther(totalEarned)}
+				{utils.formatEther(totalEarned)} ETH
 			</p>
 			<p class="uppercase text-center">rewards earned</p>
 		</div>
 	</div>
 </div>
+
+<LastDeposits />

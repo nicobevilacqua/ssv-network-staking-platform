@@ -23,7 +23,9 @@ contract StakingPoolTest is Test, StakingDataMock {
     StakingPool private stakingPool;
 
     function setUp() external {
-        address depositContractAddress = vm.envAddress("DEPOSIT_CONTRACT_ADDRESS");
+        address depositContractAddress = vm.envAddress(
+            "DEPOSIT_CONTRACT_ADDRESS"
+        );
         address SSVTokenAddress = vm.envAddress("SSV_TOKEN_ADDRESS");
         address SSVNetworkAddress = vm.envAddress("SSV_NETWORK_ADDRESS");
         address SSVRegistryAddress = vm.envAddress("SSV_REGISTRY_ADDRESS");
@@ -35,7 +37,9 @@ contract StakingPoolTest is Test, StakingDataMock {
         ssvNetwork = ISSVNetwork(SSVNetworkAddress);
         ssvRegistry = ISSVRegistry(SSVRegistryAddress);
         weth = WETH(payable(wethAddress));
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeedAddress);
+        AggregatorV3Interface priceFeed = AggregatorV3Interface(
+            priceFeedAddress
+        );
 
         stakingPool = new StakingPool(
             depositContract,
@@ -61,7 +65,7 @@ contract StakingPoolTest is Test, StakingDataMock {
         address bob = makeAddr("bob");
         deal(bob, 100 ether);
 
-        stakingPool.stake{value: 32 ether}(32 ether);
+        stakingPool.stake{value: 32 ether}();
 
         stakingPool.depositValidatorStaking(
             pubKey,

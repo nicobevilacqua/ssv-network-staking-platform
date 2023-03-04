@@ -14,13 +14,22 @@ import {IDepositContract} from "./interfaces/IDepositContract.sol";
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract StakingPool is Owned, ERC4626 {
-    enum IsActive {
-        NONE,
-        FALSE,
-        TRUE
-    }
+enum IsActive {
+    NONE,
+    FALSE,
+    TRUE
+}
 
+struct Validator {
+    bytes pubkey;
+    uint32[] operatorIds;
+    bytes[] sharesPublicKeys;
+    bytes[] sharesEncrypted;
+    uint256 amount;
+    IsActive active;
+}
+
+contract StakingPool is Owned, ERC4626 {
     uint256 private constant VALIDATOR_STAKE_AMOUNT = 32 ether;
 
     mapping(bytes32 => Validator) public validators;
@@ -33,15 +42,6 @@ contract StakingPool is Owned, ERC4626 {
     ISSVRegistry public immutable SSVRegistry;
     ERC20 public immutable SSVToken;
     AggregatorV3Interface internal immutable priceFeed;
-
-    struct Validator {
-        bytes pubkey;
-        uint32[] operatorIds;
-        bytes[] sharesPublicKeys;
-        bytes[] sharesEncrypted;
-        uint256 amount;
-        IsActive active;
-    }
 
     /* EVENTS */
     event ValidatorRegistered(bytes32 pubKeyHash, uint256 timestamp);
@@ -77,19 +77,31 @@ contract StakingPool is Owned, ERC4626 {
         priceFeed = _priceFeedAddress;
     }
 
-    function stake(uint256 _amount) public payable {
-        if (msg.value > 0) {
-            if (_amount != msg.value) {
-                revert InvalidAmount();
-            }
-            WETH(payable(address(asset))).deposit{value: _amount}();
-        } else {
-            if (_amount == 0) {
-                revert InvalidAmount();
-            }
-            asset.transferFrom(msg.sender, address(this), _amount);
+    receive() external payable {
+        totalEarned += msg.value;
+    }
+
+    function stake() public payable {
+        if (msg.value == 0) {
+            revert InvalidAmount();
         }
 
+        WETH(payable(address(asset))).deposit{value: msg.value}();
+
+        _calculateAssets(msg.value);
+    }
+
+    function stake(uint256 amount) public {
+        if (amount == 0) {
+            revert InvalidAmount();
+        }
+
+        asset.transferFrom(msg.sender, address(this), amount);
+
+        _calculateAssets(amount);
+    }
+
+    function _calculateAssets(uint256 _amount) internal {
         uint256 remainder = asset.balanceOf(address(this)) -
             (totalValidatorStakes * VALIDATOR_STAKE_AMOUNT);
 
@@ -109,13 +121,9 @@ contract StakingPool is Owned, ERC4626 {
     function unstake(uint256 _amount) external {
         _burn(msg.sender, _amount);
 
-        asset.transferFrom(msg.sender, address(this), _amount);
+        asset.transferFrom(address(this), msg.sender, _amount);
 
         emit Unstaked(msg.sender, _amount, block.timestamp);
-    }
-
-    receive() external payable {
-        totalEarned += msg.value;
     }
 
     // todo
