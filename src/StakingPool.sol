@@ -246,7 +246,7 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
-    function totalStakedIn(address who) public view returns (uint256) {
+    function totalStaked(address who) public view returns (uint256) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (asset.balanceOf(who) * price) / priceDecimals;
     }
@@ -254,15 +254,6 @@ contract StakingPool is Owned, ERC4626 {
     function totalEarnedInUSD() public view returns (uint256) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (totalEarned * price) / priceDecimals;
-    }
-
-    function getLatestPrice() public view returns (uint256 price, uint8 priceDecimals) {
-        (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
-        require(inputPrice > 0, "Bad price");
-
-        price = uint256(inputPrice);
-
-        priceDecimals = priceFeed.decimals();
     }
 
     function calcRewards(address who) public view returns (uint256) {
@@ -285,29 +276,30 @@ contract StakingPool is Owned, ERC4626 {
         return (totalEarned * price) / priceDecimals;
     }
 
+    function getLatestPrice() public view returns (uint256 price, uint8 priceDecimals) {
+        (, int256 inputPrice, , , ) = priceFeed.latestRoundData();
+        require(inputPrice > 0, "Bad price");
+
+        price = uint256(inputPrice);
+
+        priceDecimals = priceFeed.decimals();
+    }
+
     // Removed functions
 
-    function deposit(uint256 assets, address receiver) public override returns (uint256 shares) {
+    function deposit(uint256, address) public pure override returns (uint256) {
         revert("Can't deposit");
     }
 
-    function mint(uint256 shares, address receiver) public override returns (uint256 assets) {
-        revert("Can't deposit");
+    function mint(uint256, address) public pure override returns (uint256) {
+        revert("Can't mint");
     }
 
-    function withdraw(
-        uint256 assets,
-        address receiver,
-        address owner
-    ) public override returns (uint256 shares) {
-        revert("Can't deposit");
+    function withdraw(uint256, address, address) public pure override returns (uint256) {
+        revert("Can't withdraw");
     }
 
-    function redeem(
-        uint256 shares,
-        address receiver,
-        address owner
-    ) public override returns (uint256 assets) {
-        revert("Can't deposit");
+    function redeem(uint256, address, address) public pure override returns (uint256) {
+        revert("Can't redeem");
     }
 }
