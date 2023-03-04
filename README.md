@@ -1,4 +1,4 @@
-# StakingTogether 
+# D-Staker
 
 A decentralized, permissionless staking service that allows anyone to stake any amount of ether, receive rewards and contribute to the ecosystem health without any restrictions.
 
@@ -101,7 +101,7 @@ source .env && forge test --fork-url $INFURA_RPC_URL -vvv
 
 * NOTE: validator could be registry after the stake reachs 32 ether (on demand)
 
-# 
+#
 
 
 ```sh
@@ -139,7 +139,7 @@ npm run run configs/quickstart_config.json
 
 ### Use ganache for local testing
 
-1 - 
+1 -
 
 ```sh
 source .env && forge script ./script/Deploy.s.sol --rpc-url http://127.0.01:8545 --broadcast --private-key 0xa545b25e3591733f315337baaf4d972104470122f39a441295d8378c6ee05edb

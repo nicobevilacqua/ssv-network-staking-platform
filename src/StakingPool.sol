@@ -246,12 +246,26 @@ contract StakingPool is Owned, ERC4626 {
         return asset.balanceOf(address(this));
     }
 
-    function totalStaked(address who) public view returns (uint256) {
+    function totalAssetsInUSD() public view returns (uint256) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (asset.balanceOf(who) * price) / priceDecimals;
+        return (totalAssets() * price) / priceDecimals;
     }
 
     function totalEarnedInUSD() public view returns (uint256) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (totalEarned * price) / priceDecimals;
+    }
+
+    function stakeOf(address who) external view returns(uint256 amount) {
+        return asset.balanceOf(address(this);
+    }
+
+    function stakeOfInUSD(address who) external view returns(uint256 amount) {
+        (uint256 price, uint8 priceDecimals) = getLatestPrice();
+        return (asset.balanceOf(address(this)) * price) / priceDecimals;
+    }
+
+    function totalEarnedInUSD(address who) external view returns(uint256 amount) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (totalEarned * price) / priceDecimals;
     }
@@ -264,16 +278,6 @@ contract StakingPool is Owned, ERC4626 {
     function calcRewardsInUSD(address who) external view returns (uint256 amount) {
         (uint256 price, uint8 priceDecimals) = getLatestPrice();
         return (calcRewards(who) * price) / priceDecimals;
-    }
-
-    function totalStakeInUSD(address who) external view returns(uint256 amount) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (asset.balanceOf(address(this)) * price) / priceDecimals;
-    }
-
-    function totalEarnedInUSD(address who) external view returns(uint256 amount) {
-        (uint256 price, uint8 priceDecimals) = getLatestPrice();
-        return (totalEarned * price) / priceDecimals;
     }
 
     function getLatestPrice() public view returns (uint256 price, uint8 priceDecimals) {
