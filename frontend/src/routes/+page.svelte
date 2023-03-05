@@ -25,8 +25,8 @@
 		}
 
 		[totalEarned, totalEarnedInUSD, totalStaked, totalStakedInUSD, totalValidators] = await Promise.all([
-				stakingPoolContract.totalEarned(),
-				stakingPoolContract.totalEarnedInUSD(),
+				stakingPoolContract.totalEarnedHistoric(),
+				stakingPoolContract.totalEarnedHistoricInUSD(),
 				stakingPoolContract.totalSupply(),
 				stakingPoolContract.totalAssetsInUSD(),			
 				stakingPoolContract.totalValidators(),

@@ -10,8 +10,6 @@
 
 	const {formatEther} = utils;
 
-	
-
 	let loaded = false;
 	let invalid = false;
 
