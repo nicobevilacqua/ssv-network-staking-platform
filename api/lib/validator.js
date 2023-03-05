@@ -33,23 +33,6 @@ function getWETHContract() {
 	return contractInstance;
 }
 
-// async function registerValidatorAndDeposit(registerValidatorAndDepositData) {
-// 	console.log('registerValidatorAndDeposit');
-// 	const contract = getContract();
-// 	const tx = await contract.registerValidatorAndDeposit(
-// 		registerValidatorAndDepositData.pubKey,
-// 		registerValidatorAndDepositData.operatorIds,
-// 		registerValidatorAndDepositData.sharePublicKeys,
-// 		registerValidatorAndDepositData.shareEncrypted,
-// 		utils.parseEther(10),
-// 		registerValidatorAndDepositData.withdrawal_credentials,
-// 		registerValidatorAndDepositData.signature,
-// 		registerValidatorAndDepositData.deposit_data_root
-// 	);
-// 	const receipt = await tx.wait();
-// 	return receipt;
-// }
-
 async function registerValidator(registerValidatorData) {
 	const contract = getContract();
 
@@ -79,19 +62,19 @@ async function depositValidatorStaking(depositValidatorStakingData) {
 }
 
 const keystores = [
-	require('../config/keystores/keystore1.json'),
-	require('../config/keystores/keystore2.json'),
-	require('../config/keystores/keystore3.json'),
-	require('../config/keystores/keystore4.json'),
-	require('../config/keystores/keystore5.json')
+	require('../../config/keystores/keystore1.json'),
+	require('../../config/keystores/keystore2.json'),
+	require('../../config/keystores/keystore3.json'),
+	require('../../config/keystores/keystore4.json'),
+	require('../../config/keystores/keystore5.json')
 ];
 
 const deposits = [
-	require('../config/deposits/deposit1.json'),
-	require('../config/deposits/deposit2.json'),
-	require('../config/deposits/deposit3.json'),
-	require('../config/deposits/deposit4.json'),
-	require('../config/deposits/deposit5.json')
+	require('../../config/deposits/deposit1.json'),
+	require('../../config/deposits/deposit2.json'),
+	require('../../config/deposits/deposit3.json'),
+	require('../../config/deposits/deposit4.json'),
+	require('../../config/deposits/deposit5.json')
 ];
 
 async function getOperators() {
@@ -131,7 +114,7 @@ function generateValidatorData() {
 	return { keystore, deposit };
 }
 
-async function main() {
+module.exports = async function registerValidators() {
 	const contract = getContract();
 	const weth = getWETHContract();
 	let balance = await weth.balanceOf(contract.address);
@@ -206,6 +189,4 @@ async function main() {
 		balance = await weth.balanceOf(contract.address);
 		console.log('current balance', utils.formatEther(balance));
 	}
-}
-
-main().catch(console.error);
+};
