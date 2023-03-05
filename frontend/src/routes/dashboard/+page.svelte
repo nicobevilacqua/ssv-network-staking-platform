@@ -89,10 +89,12 @@
 				});
 				return;
 			}
+
 			const tx = await stakingContract.claim();
-			const receipt = await tx.wait();
-			console.log(receipt);
-			showNotification("Success", {
+
+			const { transactionHash } = await tx.wait();
+			
+			showNotification(`Success: Tx: <a href="https://goerli.etherscan.io/tx/${transactionHash}">${transactionHash}</a>`, {
 				type: NotificationType.Check
 			});
 
@@ -121,10 +123,12 @@
 				});
 				return;
 			}
+			
 			const tx = await stakingContract.unstake(availableForUnstake);
-			const receipt = await tx.wait();
-			console.log(receipt);
-			showNotification("Success", {
+			
+			const { transactionHash } = await tx.wait();
+			
+			showNotification(`Success: Tx: <a href="https://goerli.etherscan.io/tx/${transactionHash}">${transactionHash}</a>`, {
 				type: NotificationType.Check
 			});
 
