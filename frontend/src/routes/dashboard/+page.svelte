@@ -123,7 +123,7 @@
 				});
 				return;
 			}
-			
+
 			const tx = await stakingContract.unstake(availableForUnstake);
 			
 			const { transactionHash } = await tx.wait();
