@@ -57,17 +57,17 @@
 			type: NotificationType.InProgress
 		});
 		try {
-			// const rawTransaction = await stakingContract.populateTransaction.stake();
-			// const successfull = await simulate({
-			// 	...rawTransaction,
-			// 	value: utils.parseEther(inputAmount.toString()),
-			// });
-			// if (!successfull) {
-			// 	showNotification("The transaction will be reverted. Please, check the values", {
-			// 		type: NotificationType.Error
-			// 	});
-			// 	return;
-			// }
+			const rawTransaction = await stakingContract.populateTransaction.stake();
+			const successfull = await simulate({
+				...rawTransaction,
+				value: utils.parseEther(inputAmount.toString()),
+			});
+			if (!successfull) {
+				showNotification("The transaction will be reverted. Please, check the values", {
+					type: NotificationType.Error
+				});
+				return;
+			}
 			const tx = await stakingContract.stake({
 				value: utils.parseEther(inputAmount.toString()),
 			});
